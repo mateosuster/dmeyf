@@ -9,7 +9,7 @@ require("rlist")
 require("parallel")
 require("rpart")
 
-setwd( "M:\\" )
+setwd( "C:/Archivos/maestria_cs_datos/Materias/DM_EyF/dmeyf/" )
 
 ksemillas  <- c(102191, 200177, 410551, 552581, 892237) #reemplazar por las propias semillas
 

@@ -1,0 +1,161 @@
+---
+title: "Análisis exploratorio de datos"
+autor: Mateo Suster
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Librerías y datos
+```{r}
+library( "data.table")
+library("ggplot2")
+library("psych")
+
+carpeta_datasetsOri <-  "../../../datasetsOri/"
+septiembre <- "paquete_premium_202009.csv"
+ds <- fread(paste0(carpeta_datasetsOri, septiembre,collapse = ""), header=TRUE, showProgress = FALSE)
+
+# Ratio churn
+target <- dcast(ds, foto_mes ~ clase_ternaria,
+           length, 
+           value.var = "clase_ternaria" )
+
+churn <- target$`BAJA+2` / (target$`BAJA+2` + target$`BAJA+1` + target$CONTINUA)  
+
+```
+
+
+# EDA
+
+## Cantidad de productos que el cliente posee con el banco (variable `cproductos`)
+Se presenta una mayor proporción de churn en los valores bajos de la variable `cproductos`, lo cual tiene sentido dado que mientras más productos poseea un cliente es más difícil que se genere su baja. Esto se puede observar, en principio, en las densidades por clase y en un gráfico de barras proporcional. 
+```{r}
+ggplot(ds, aes(x=cproductos,
+               color = clase_ternaria)) +
+  facet_grid(clase_ternaria ~ ., scales = "free") +
+  geom_density(position ="identity", fill="white", alpha=0.5)
+
+ggplot(ds, aes(x=cproductos,
+               fill = clase_ternaria)) +
+  geom_bar(position = "fill")
+
+```
+En números, los churn representan casi el 16% de los clientes con 3 productos y 4% de aquellos con 4. Sin embargo, son pocos a medida que la cantidad de productos aumentan.
+```{r}
+prop.table(table(ds$cproductos , ds$clase_ternaria), margin = 1)
+```
+
+Por lo tanto, la ganancia que se generaría a partir de una regla única con esta variable es demasiado baja ($33750)
+
+```{r}
+ds_cproductos <- dcast(ds, cproductos ~ clase_ternaria, 
+                        length, 
+                        value.var = "clase_ternaria" )
+
+ds_cproductos[, ratio_baja2 := `BAJA+2` /  (`BAJA+1`+`BAJA+2`+CONTINUA)]
+ds_cproductos[, lift := (ratio_baja2 / churn)]
+
+ds_cproductos[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+cat("Ganancia =",ds_cproductos[Ganancia > 0, sum(Ganancia)])
+
+```
+
+## Saldo total las cuentas (variable `mcuentas_saldo`)
+En principio, los gráficos de densidad del saldo total de todas las cuentas del cliente no parece ser del todo buena para distinguir entre los grupos. Aparentemente, los valores más frecuentes no se encuentran muy distantes, generando densidades solapadas, aunque la presencia de outliers elevados rompe las escalas de los gráficos.
+
+```{r}
+ggplot(ds, aes(x=mcuentas_saldo, color = clase_ternaria)) +
+    facet_grid(clase_ternaria ~ .) +
+  geom_density()
+
+```
+
+Sin embargo, viendo más en detalle, los valores centrales (media y mediana) entre grupos se encuentra más bien distante: los clientes que continúan poseen saldos de cuenta mucho más elevados. 
+```{r}
+describe = describeBy(ds[,.(mcuentas_saldo, clase_ternaria)], group="clase_ternaria")
+
+cat("Los clientes que continúan poseen un saldo en sus cuentas", 
+    (( describe$"CONTINUA"$median[1]/describe$"BAJA+2"$median[1])-1 )*100, 
+    "% mayor" )
+
+
+```
+
+```{r}
+
+# summary(ds$mcuentas_saldo)
+
+iters = seq(from = min(ds$mcuentas_saldo), to = max(ds$mcuentas_saldo), by = 40000)
+# pb <- txtProgressBar(min = 0, max = length(iters), style = 3)
+
+gcia_i = 0
+for (i in iters ){
+  # setTxtProgressBar(pb, i)
+
+
+   ds[,  `:=` (vble_cat = as.factor(ifelse(mcuentas_saldo < i,
+                                          "Bajo", "Alto"
+                                          )
+                                   )
+              )
+     ]
+
+  ds_vble_cat <- dcast(ds, vble_cat  ~ clase_ternaria,
+                        length,
+                        value.var = "clase_ternaria" )
+
+  ds_vble_cat[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+
+  gcia = ds_vble_cat[Ganancia > 0, sum(Ganancia)]
+
+  if (gcia > gcia_i){
+    gcia_i = gcia
+    pto_corte= i
+
+  }
+
+}
+
+# close(pb)
+
+
+# cat("La ganancia máxima de la variable mcuentas_saldo es igual a $", gcia_i, "y su punto de corte es", pto_corte)
+```
+
+## Pago mínimo/morosidad (variables `Visa_delinquency` y `Master_delinquency`)
+
+
+```{r}
+
+# Morosidad
+ds[,  `:=` (morosidad = rowSums(.SD, na.rm= T)), .SDcols =c("Visa_delinquency", "Master_delinquency")   ]
+
+ggplot(ds, aes(x=morosidad, fill = clase_ternaria)) +
+    facet_grid(clase_ternaria ~ ., scales = "free") +
+  geom_histogram()
+```
+
+
+```{r}
+ds_morosidad <- dcast(ds,morosidad ~ clase_ternaria, 
+                        length, 
+                        value.var = "clase_ternaria" )
+
+ds_morosidad[, total := (`BAJA+1`+`BAJA+2`+CONTINUA)]
+ds_morosidad[, ratio_baja2 := `BAJA+2` / total]
+ds_morosidad[, morosidad := factor(morosidad)]
+ds_morosidad[, lift := (ratio_baja2 / churn)]
+
+ds_morosidad[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+
+ds_morosidad
+cat("Ganancia =",ds_morosidad[Ganancia > 0, sum(Ganancia)])
+
+```
+```{r}
+ggplot(ds_morosidad, aes(x=morosidad, y=ratio_baja2)) +
+  geom_bar(stat="identity", fill="green") +  geom_hline(yintercept = churn, color="black") + 
+  ggtitle("Ratio de churn por categoría de delinquency")
+```

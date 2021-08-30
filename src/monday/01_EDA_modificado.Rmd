@@ -47,7 +47,6 @@ library("ggplot2")
 Definimos las variables los paths donde encontrar los datasets.
 
 ```{r}
-# getwd()
 carpeta_datasetsOri <-  "../../../datasetsOri/"
 septiembre <- "paquete_premium_202009.csv"
 
@@ -184,32 +183,33 @@ ggplot(ds, aes(x=mcomisiones_mantenimiento)) +
 Aplique un análisis similar para otras variables numéricas que usted considere relevantes.
 :::
 
-Pasemos ahora a una variable que podemos *suponer* que puede ser categórica. Tomemos `Visa_status`, aunque quizás sea más ordinal que categórica (esta no la elegimos ya desde un criterio no tan aleatorio).
+Pasemos ahora a una variable que podemos *suponer* que puede ser categórica. Tomemos `Visa_status` combinada con `Master_status`, aunque quizás sea más ordinal que categórica (esta no la elegimos ya desde un criterio no tan aleatorio).
 
 ```{r}
+ds[,  `:=` (status_all = rowMeans(.SD, na.rm= T)), .SDcols =c("Visa_status","Master_status")   ]
 
-ds_visa_estado <- dcast(ds, Visa_status  ~ clase_ternaria, 
+ds_tarjeta_estado <- dcast(ds, status_all +  Visa_status + Master_status  ~ clase_ternaria, 
                         length, 
                         value.var = "clase_ternaria" )
 
-ds_visa_estado
+ds_tarjeta_estado
 
 ```
 
 Vamos a ver empezar a ver de forma binaria la clase objetivo, nos va a ayudar a dar una idea de la potencia discriminante que tiene esta variable.
 
 ```{r}
-ds_visa_estado[, total := (`BAJA+1`+`BAJA+2`+CONTINUA)]
-ds_visa_estado[, ratio_baja2 := `BAJA+2` / total]
-ds_visa_estado[, Visa_status := factor(Visa_status)]
+ds_tarjeta_estado[, total := (`BAJA+1`+`BAJA+2`+CONTINUA)]
+ds_tarjeta_estado[, ratio_baja2 := `BAJA+2` / total]
+ds_tarjeta_estado[, Visa_status := factor(Visa_status)]
 
-ds_visa_estado
+ds_tarjeta_estado
 ```
 
-Para tener una visión completa, graficamos la cantidad de clientes en cada una de la categorías de `Visa_status`
+Para tener una visión completa, graficamos la cantidad de clientes en cada una de la categorías de `Visa_status` y `Master_status`
 
 ```{r}
-ggplot(ds_visa_estado, aes(x=Visa_status, y=total)) +
+ggplot(ds_tarjeta_estado, aes(x=Visa_status, y=total)) +
   geom_bar(stat="identity", fill="blue") + 
   ggtitle("Cantidad de clientes por categoría de Visa_status")
 ```
@@ -218,7 +218,7 @@ Y para ver la fuerza de la variable en cada categoría, vemos el ratio de `BAJAS
 
 ```{r}
 
-ggplot(ds_visa_estado, aes(x=Visa_status, y=ratio_baja2)) +
+ggplot(ds_tarjeta_estado, aes(x=Visa_status, y=ratio_baja2)) +
   geom_bar(stat="identity", fill="green") +  geom_hline(yintercept = churn, color="black") + 
   ggtitle("Ratio de churn por categoría de Visa_status")
 
@@ -229,17 +229,17 @@ Sumemos el **lift** para entender cuanto mejora una categoría de la variable `V
 
 ```{r}
 
-ds_visa_estado[, lift := (ratio_baja2 / churn)]
+ds_tarjeta_estado[, lift := (ratio_baja2 / churn)]
 
-ds_visa_estado
+ds_tarjeta_estado
 ```
 
 Evaluemos la ganancia de cada una de las categorías para `Visa_status`
 
 ```{r}
 
-ds_visa_estado[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
-ds_visa_estado
+ds_tarjeta_estado[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+ds_tarjeta_estado
 
 ```
 
@@ -247,7 +247,7 @@ Y calculemos la ganancia total, si son quedamos sólo con los que nos "*da de co
 
 ```{r}
 
-cat("Ganancia =",ds_visa_estado[Ganancia > 0, sum(Ganancia)])
+cat("Ganancia =",ds_tarjeta_estado[Ganancia > 0, sum(Ganancia)])
 
 ```
 
@@ -311,3 +311,6 @@ as.data.frame(modelo$variable.importance)
 
 Lo visto es muy útil para las variables de pocas clases. Para variables numéricas es inaccesible esta de forma de hacer reglas. Arme una función que busque para una variable numérica el mejor punto de corte, esto es, que corte la variable en dos partes, dejando en una de las partes la mayor ganancia posible.
 :::
+
+
+

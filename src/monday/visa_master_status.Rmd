@@ -1,0 +1,155 @@
+---
+title: "E.D.A.: Exploratory data analysis"
+
+date: "2020-08-23"
+version: 0.91 
+output: 
+  html_document:
+    theme: spacelab
+    highlight: monochrome
+    df_print: paged
+#    toc: true
+#    toc_depth: 2
+---
+
+```{r }
+library( "data.table")
+library("ggplot2")
+
+```
+
+
+```{r}
+# getwd()
+carpeta_datasetsOri <-  "../../../datasetsOri/"
+septiembre <- "paquete_premium_202009.csv"
+
+```
+
+
+```{r}
+
+ds <- fread(paste0(carpeta_datasetsOri, septiembre,collapse = ""), header=TRUE, showProgress = FALSE)
+
+```
+
+
+```{r}
+#agrega promedio status
+
+ds[,  `:=` ("status_all" = rowMeans(.SD, na.rm= T)), .SDcols =c("Visa_status","Master_status")   ]
+
+describe(ds[,.(status_all)])
+
+ds_tarjeta_estado <- dcast(ds, status_all   ~ clase_ternaria, 
+                        length, 
+                        value.var = "clase_ternaria" )
+
+ds_tarjeta_estado
+
+```
+
+
+```{r}
+ds_tarjeta_estado[, total := (`BAJA+1`+`BAJA+2`+CONTINUA)]
+ds_tarjeta_estado[, ratio_baja2 := `BAJA+2` / total]
+ds_tarjeta_estado[, status_all := factor(status_all)]
+ds_tarjeta_estado[, lift := (ratio_baja2 / churn)]
+
+ds_tarjeta_estado
+```
+
+
+
+```{r}
+ggplot(ds_tarjeta_estado, aes(x=status_all, y=total)) +
+  geom_bar(stat="identity", fill="blue") + 
+  ggtitle("Cantidad de clientes por categoría de status_all")
+```
+
+Y para ver la fuerza de la variable en cada categoría, vemos el ratio de `BAJAS+2` que tiene cada una.
+
+```{r}
+
+ggplot(ds_tarjeta_estado, aes(x=status_all, y=ratio_baja2)) +
+  geom_bar(stat="identity", fill="green") +  geom_hline(yintercept = churn, color="black") + 
+  ggtitle("Ratio de churn por categoría de status_all")
+
+
+```
+
+```{r}
+
+ds_tarjeta_estado[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+ds_tarjeta_estado
+
+```
+
+Y calculemos la ganancia total, si son quedamos sólo con los que nos "*da de comer*"
+
+```{r}
+
+cat("Ganancia =",ds_tarjeta_estado[Ganancia > 0, sum(Ganancia)])
+
+```
+
+¡Hemos encontrado un regla que nos hace ganar un montón de plata! Sin algoritmos complejos, sólo con exploración simple y dura. Tal como lo haría ~~su enemigo~~ un analista de negocios.
+
+::: {.tarea}
+**TAREA**
+
+De forma similar a `status_all`, analice y combine con la variable `Master_status`. ¿Logra una mejor regla cuando están combinadas?
+:::
+
+Vamos por un análisis más.
+
+Un **analista de negocio** pensará que una de las variables más fuertes es el nivel de actividad de una cuenta. Observa que hay una variable llamada `ctrx_quarter` que refleja la cantidad de movimientos que el cliente realizó en los últimos 90 días. Ayudemos al **analista** a validar su hipótesis.
+
+```{r}
+s$ctrx_quarter
+```
+
+Vemos que tiene una fuerte asimetría, estudiemos solamente a la gente con pocos movimientos.
+
+```{r}
+
+ds_movimientos <- dcast(ds, ctrx_quarter  ~ clase_ternaria, 
+                        length, 
+                        subset = .(ctrx_quarter < 10),
+                        value.var = "clase_ternaria" )
+
+ds_movimientos[, total := (`BAJA+1`+`BAJA+2`+CONTINUA)]
+ds_movimientos[, Ganancia :=  48750 * `BAJA+2` - 1250 * (CONTINUA + `BAJA+1`) ]
+
+ds_movimientos
+```
+
+El olfato del **analista** es correcto.
+
+::: {.tarea}
+**TAREA para ZULIP**
+
+Meta la manos en el barro y analice las variables, navegue los datos. Haga preguntas y respóndalas, no tiene que ser necesariamente en relación a la variable objetivo.
+
+Mientra más conozca los datos, mejor le irá y **más fácil será comunicar los resultados a sus pares de negocio.**
+
+Comparta sus hallazgos **zulip**, en `#clasesAlejandro > EDA`
+:::
+
+**Una ayuda**
+
+Una forma de saber cuales son las variables que merecen nuestra atención, es realizar un modelo y consultar por cuales son pare este, las más importantes. Sin entrar en mucho detalle, hagamos un árbol de decisión y obtengamos un listado de variables para explorar. *Recuerde* que la mejor variable en un árbol, no es necesariamente la mejor variable individual.
+
+```{r}
+library(rpart)
+
+modelo <- rpart( clase_ternaria ~ ., data = ds, cp=0.0005, xval=0 )
+
+as.data.frame(modelo$variable.importance)
+```
+
+::: {.tarea}
+**TAREA AVANZADA Y OPCIONAL**
+
+Lo visto es muy útil para las variables de pocas clases. Para variables numéricas es inaccesible esta de forma de hacer reglas. Arme una función que busque para una variable numérica el mejor punto de corte, esto es, que corte la variable en dos partes, dejando en una de las partes la mayor ganancia posible.
+:::

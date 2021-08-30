@@ -4,24 +4,30 @@ require("rpart")
 
 #Aqui se debe poner la carpeta de la computadora local
 setwd( "C:/Archivos/maestria_cs_datos/Materias/DM_EyF/dmeyf/")  
-
 #Establezco el Working Directory
+
+library(readODS) 
+library(janitor)
+
+dic_list = read.ods("dic/DiccionarioDatos.ods")
+dic = as.data.frame(dic_list[1]) %>%  row_to_names(row_number = 1)
+
 
 #cargo los datos de 202009 que es donde voy a ENTRENAR el modelo
 dtrain  <- fread(  "../datasetsOri/paquete_premium_202009.csv")
 
-str(dtrain)
+# str(dtrain)
 
 #genero el modelo
 modelo  <- rpart("clase_ternaria ~ .",
                  data = dtrain,
-                 xval=0,
+                 xval=5,
                  cp=        -0.34, 
-                 minsplit=  430,
+                 minsplit=  80,
                  minbucket=  152,
                  maxdepth=   8 )
 
-head(dtrain$clase_ternaria)
+# head(dtrain$clase_ternaria)
 #aplico al modelo  a los datos de 202011
 
 #cargo los datos de 202011, que es donde voy a APLICAR el modelo
@@ -29,8 +35,8 @@ dapply  <- fread("../datasetsOri/paquete_premium_202011.csv")
 
 prediccion  <- predict( modelo, dapply , type = "prob") #aplico el modelo
 
-dim(prediccion)
-dim(dapply)
+# dim(prediccion)
+# dim(dapply)
 
 #prediccion es una matriz con TRES columnas, llamadas "BAJA+1", "BAJA+2"  y "CONTINUA"
 #cada columna es el vector de probabilidades 

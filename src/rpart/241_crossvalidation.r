@@ -8,9 +8,9 @@ require("data.table")
 require("parallel")
 require("rpart")
 
-setwd( "M:\\" )
+setwd( "C:/Archivos/maestria_cs_datos/Materias/DM_EyF/dmeyf/" )
 
-ksemillas  <- c(102191, 200177, 410551, 552581, 892237) #reemplazar por las propias semillas
+ksemillas  <- c(995641, 433747, 536651, 388519, 269897) #reemplazar por las propias semillas
 
 #------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ ArbolesCrossValidation  <- function( data, param, qfolds, semilla )
 #------------------------------------------------------------------------------
 
 #cargo los datos donde voy a ENTRENAR el modelo
-dataset  <- fread("./datasetsOri/paquete_premium_202009.csv")
+dataset  <- fread("../datasetsOri/paquete_premium_202009.csv")
 
 #inicializo la tabla donde voy a dejar los resultados
 tb_resultados  <- data.table( maxdepth=integer(), ganancia=numeric() )
@@ -80,3 +80,4 @@ for(  vmaxdepth in  c(4,5,6,7,6,9,10,11) )
 }
 
 tb_resultados
+
