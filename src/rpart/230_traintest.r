@@ -16,6 +16,11 @@ ksemilla  <- 995641  #Cambiar por la primer semilla de cada uno !
 set.seed( ksemilla )
 fold  <- ifelse( runif( nrow(dataset) ) <  0.7, 1, 2 )
 
+# que hace runif?
+runif(10) # provee n° aleatorios e/ 0 y 1, con distribución uniforme (cada uno tiene la misma probabilidad de ocurrencia)
+runif(10) < 0.7 # va a dar 7 veces FALSE
+as.numeric(runif(10) < 0.7)
+
 #genero el modelo
 modelo  <- rpart("clase_ternaria ~ .",
                  data= dataset[ fold==1], #1 es training

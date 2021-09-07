@@ -6,16 +6,27 @@ require("data.table")
 
 
 #Aqui comienza el programa
-setwd("~/buckets/b1/crudoB/")
+setwd("C:/Archivos/maestria_cs_datos/Materias/DM_EyF/dmeyf/")
 
-datasetA  <- fread( "./datasetsOri/paquete_premium_202009.csv" )
-datasetB  <- fread( "./datasetsOri/paquete_premium_202011.csv" )
+datasetA  <- fread( "../datasetsOri/paquete_premium_202009.csv" )
+datasetB  <- fread( "../datasetsOri/paquete_premium_202011.csv" )
+
+sum(datasetA$internet)
+sum(datasetB$internet)
+table(datasetA$internet) # quitar esta variable de la formula cuando entrenemos el arbol
+table(datasetB$internet)
+
+summary(datasetA$mtarjeta_master_descuentos)
+summary(datasetB$mtarjeta_master_descuentos)
+hist(datasetB$mtarjeta_master_descuentos)
+
+# matm , tmobile_app, cmobile_app_trx  estan feas
 
 
 campos_buenos  <- setdiff(  colnames( datasetA),  c("numero_de_cliente","foto_mes","clase_ternaria" ) )
 
 
-pdf("./work/densidades_01.pdf")
+pdf("../work/densidades_01.pdf")
 for( campo in  campos_buenos )
 {
   cat( campo, "  " )

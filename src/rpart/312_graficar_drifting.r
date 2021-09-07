@@ -6,7 +6,7 @@ require("data.table")
 
 
 #cargo los datasets que voy a comparar
-setwd("~/buckets/b1/crudoB/" )  #establezco la carpeta donde voy a trabajar
+setwd("C:/Archivos/maestria_cs_datos/Materias/DM_EyF/" )  #establezco la carpeta donde voy a trabajar
 
 
 datasetA  <- fread( "./datasetsOri/paquete_premium_202009.csv" )
@@ -16,7 +16,7 @@ datasetB  <- fread( "./datasetsOri/paquete_premium_202011.csv" )
 campos_buenos <-  setdiff(  colnames( datasetA),  c("numero_de_cliente","foto_mes","clase_ternaria" ) )
 
 
-pdf("./work/data_delta_01.pdf")
+pdf("../work/data_delta_01.pdf")
 
 for( campo in  campos_buenos )
 {

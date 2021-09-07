@@ -56,19 +56,35 @@ Empecemos con un poco de *gimnasia algorítmica:*
 
 **Preguntas sobre árboles**
 
--   ¿Es posible encontrar ganancia positiva en un corte sobre una variable?
+-   ¿Es posible encontrar ganancia positiva en ambos intervalos en un corte sobre una variable?
+
+    Si ponemos en los dos lados el peso de BAJA+2 con el resto de los casos, no hay forma de separar un conjunto tan grande de forma tal que sea positivo.
+    Es imposible distribuir nuestros positivos de forma tal de generar ganancia en todos los espacios.
+    No es posible separar un conjunto tan grande de forma tal que haya ganancia positiva en todos lados.
+    Como se seteó la función de ganancia, obtener gcia a ambos lados no es posible.
+    Pero donde llegamos a tener ganancia positiva, como es en cardinalidad (su tamañao) el otro intervalo?
 
 -   ¿Cuál es la cardinalidad de los *intervalos* que dan ganancia?
 
+    Son más pequeños que los otros
+
 -   ¿Cómo trata los árboles las variables con datos ausentes?
+
+    rpart, una vez que el arbol corta una vble genera dos categorías y el NA puede ser considerado como una categoría.
 
 -   Usualmente se suele cortar las variables en 2 intervalos
 
     -   ¿Se podría cortar en más intervalos?
 
+        -   de poderse, es una búsqueda mucho más intensa y más compleja
+
     -   ¿Cuál sería el costo?
 
+        -   aumentan la cantidad de cortes
+
     -   ¿Se obtendrían mejores resultados?
+
+        -   sí, pero con arboles más pequeños. cortarlo de a dos no es malo, pero es más económico. aunque quizas es mejor tener un arbol un poco mas profundo con cortes de a dos
 
 -   ¿Cuanto le afecta el """desbalanceo""" de datos al algoritmo?
 
@@ -268,7 +284,7 @@ hojasbinario <- tablahojas(arbolbinario, ds, "clase_binaria")
 ```
 
 ```{r}
-hojasbinario
+hojasbinario[,]
 ```
 
 Agreguemos una variable de `ganancia` y revisemos rápidamente la ganancia que obtenemos por clase *evento*
@@ -328,14 +344,19 @@ hojasordenadas
 **Preguntas**
 
 -   ¿Cuál es la máxima ganancia posible es nuestro árbol?
-
+    $ 3,506,250
+    
 -   ¿Cuál es el `punto de corte` que sugiere?
-
+    0.36
+    
 -   ¿Por qué es distinto al teórico?
+  Porque no hay ninguno con dicha probabilidad
 
 -   ¿Es nuestro `punto de corte` es igual de útil?
-
+  Si, es mas intuitivo/ingenuo
+  
 Y por último grafiquemos la `probabilidad` en función de la `ganancia`, para tener una dimensión del problema que enfrentamos si elegimos mal el `punto de corte`.
+
 
 ```{r}
 ggplot(hojasordenadas, aes(x=p_evento ,y=gan_acum)) +
@@ -402,7 +423,11 @@ ggplot(hojasordenadas, aes(x=fpr,y=tpr)) +
 **Pregunta**
 
 -   ¿Qué representa la **curva ROC**?
-
+  Pone al TPR (prob de que acertemos; probability of detection) frente al FPR (prob de mandar pero que eran falsos sobre la cantidad de negativos que existen; prob de una falsa alarma).  
+  Pero para este problema no necesitamos un TPR (recall) más alto?? A la curva no le interesa tanto la proporción del target; incluso podría rebalancear la proporción del target y esta se vería casi inalterada. Lo que mide la curva ROC es cuanto puedo separar mis clases (cual es la prob de una clase negativa). Puedo obtener una buena imagen de mi problema independientemente de mi balanceo. Muestra en función de cuánto error yo estoy dispuesto a aceptar, cuántos ratio de acierto tengo. Ej: si yo no puedo tolerar mucho error, hay que aceptar que la tasa de acierto va a ser baja (TPR). 
+  El fin de la curva es que te de una buena métrica que atraviese modelos. La relación de costos (o la medición de la gcia del negocio) se obtiene con una matriz de profits. 
+  La curva ROC puede distorcionarse en función de los FP y TP que tengamos. En el espacio donde se encuentra la relación adecuada, será nuestro "punto de equilibrio".
+ 
 Como es muy complejo reflejar en palabras una curva, se suele calcular el área bajo su curva, **auc** y reflejar ese valor como métrica de la calidad del modelo.
 
 Calculamos su área
@@ -423,8 +448,16 @@ Larga vida a las librerías!
 **Preguntas**
 
 -   ¿**AUC** es una métrica global o local?
-
+    Es una métrica global pq considera todos los puntos de corte. Mide una métrica para todos los elementos. 
+    Una métrica local, en cambio, es una que evalúa un sólo punto de corte.
+    La curva ROC es la segunda métrica más importante.
+    La primera es la ganancia del negocio (que es una métrica local)
+    
+    Una curva ROC con alta AUC representa un modelo que ordena bien. Pero que la curva ordene bien mucho no nos importa pq a nosotros nos interesan solo los pocos casos de BAJA+2 a los cuales les vamos a enviar el regalo. 
+    
+  
 -   ¿Pueden dos curvas distintas tener un mismo valor de **AUC**?
+    Sí
 
 Las variables que construimos para llegar a este resultado, son muy útiles para el cálculo de otras *métricas*, como por ejemplo el **nada recomendable de usar**: **Accuracy.** Pero para todos los posibles `puntos de corte` y no sólo para el arbitrario 0.5.
 
@@ -462,6 +495,42 @@ Por esto mismo, a alguien se le ocurrió el F-Beta.
 Construya esta última para varios Betas.
 ¿Hay algún Beta que tenga un **punto de corte** similar al nuestro?
 :::
+
+```{r}
+hojasordenadas[, precision := tp/(tp+fp)]
+
+# β is chosen such that recall is considered β times as important as precision
+hojasordenadas[, fscore := 2*((precision*tpr)/(precision+tpr))]
+hojasordenadas[, fscore2 := (1+2^2)*((precision*tpr)/(2^2*precision+tpr))] #da más peso al recall
+hojasordenadas[, fscore0.5 := (1+0.5^2)*((precision*tpr)/(0.5^2*precision+tpr))] # da mas peso a precision
+hojasordenadas[, fscore1.5 := (1+1.5^2)*((precision*tpr)/(1.5^2*precision+tpr))] 
+hojasordenadas[, fscore0.25 := (1+0.25^2)*((precision*tpr)/(0.25^2*precision+tpr))] 
+
+hojasordenadas[, .(p_evento, precision, tpr, fscore, fscore2, fscore0.5)]
+```
+
+```{r}
+hojasordenadas[, fscore0.5 := (1+0.5^2)*((precision*tpr)/(0.5^2*precision+tpr))] # da mas peso a precision
+
+```
+
+
+```{r}
+ggplot(hojasordenadas, aes(x=p_evento)) + 
+  geom_line(aes(y=fscore, color = "fscore")) +
+  geom_line(aes(y=fscore2, color = "fscore_2")) +
+  geom_line(aes(y=fscore0.5, color = "fscore_0.5")) +
+  geom_line(aes(y=fscore1.5, color = "fscore1.5")) +
+  geom_line(aes(y=fscore0.25, color = "fscore0.25")) +
+  geom_vline(xintercept = 0.025, linetype="dotted")
+
+ggplot(hojasordenadas, aes(x=p_evento)) + 
+  geom_line(aes(y=precision, color = "precision")) +
+  geom_line(aes(y=tpr, color = "recall")) 
+
+
+```
+
 
 **Tiempo de un break**
 
@@ -510,6 +579,7 @@ Podemos hacer un *sampleo* simple como
 ```{r}
 set.seed( semillas[1] )
 particion <- ifelse( runif( nrow(ds) ) <  0.7, 1, 2 )
+
 ```
 
 Donde `particion` es un vector que define para cada fila de nuestro *dataset* si debe ir al conjunto de entrenamiento o al de testeo.
@@ -522,6 +592,20 @@ También alguno podría decir que hay tantos elementos que la probabilidad que p
 
 Realice múltiples muestreos simples y evalué en cada caso si se mantienen las proporciones de las clases.
 :::
+```{r}
+
+for (i in semillas[1:5]){
+  set.seed(i)
+  particion <- ifelse( runif( nrow(ds) ) <  0.7, 1, 2 )
+  
+  cat("semilla", i, "\n")
+  cat("prop train", prop.table(table(ds[particion==1, .(clase_binaria)])), "\n" )
+  cat("prop test", prop.table(table(ds[particion==2, .(clase_binaria)])), "\n")
+  cat("\n")
+  
+
+}
+```
 
 Para evitar los posibles problemas, usaremos muestras estratificadas, estas mantienen las proporciones de las clases entre las muestras.
 
@@ -752,6 +836,11 @@ Buscamos separar los conjuntos de datos para hacer robustos nuestros modelos y n
 **Preguntas**
 
 -   ¿Por qué se produce semejante dispersión?
+    Uno de los efectos q puede solucionar esto es que las distribuciones de train y test sean similares.
+    Como hacemos?
+    Dejar de lado datos?
+    No podemos.
+    Es dificil atacar este problema en train y test.
 
 -   ¿Cuál considera que es el "valor real"?
     dicho de otra forma, si aplicara el mismo modelo a un nuevo conjunto de datos, ¿cuál sería el esperado?
@@ -911,10 +1000,10 @@ Repasemos las prácticas más convencionales para la selección de modelos:
 
 **Pregunta**
 
--   ¿Cuál es la diferencia entre **test** y **validation**?
+-   ¿Cuál es la diferencia entre **test** y **validation**? validación suele usarse para seleecionar el modelo; y test solo para evaluar el modelo
 
 **Una pregunta MUCHO más interesante**
 
--   Si entendemos las diferencias entre **test** y **validation** ... cuántas veces podemos usar el conjunto de **test** sin convertirlo en **validation**?
+-   Si entendemos las diferencias entre **test** y **validation** ... cuántas veces podemos usar el conjunto de **test** sin convertirlo en **validation**? una sola? podemos usar kaggle una sola vez?
 
 ------------------------------------------------------------------------
