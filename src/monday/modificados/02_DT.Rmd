@@ -57,12 +57,15 @@ Empecemos con un poco de *gimnasia algorítmica:*
 **Preguntas sobre árboles**
 
 -   ¿Es posible encontrar ganancia positiva en ambos intervalos en un corte sobre una variable?
+<<<<<<< HEAD
 
     Si ponemos en los dos lados el peso de BAJA+2 con el resto de los casos, no hay forma de separar un conjunto tan grande de forma tal que sea positivo.
     Es imposible distribuir nuestros positivos de forma tal de generar ganancia en todos los espacios.
     No es posible separar un conjunto tan grande de forma tal que haya ganancia positiva en todos lados.
     Como se seteó la función de ganancia, obtener gcia a ambos lados no es posible.
     Pero donde llegamos a tener ganancia positiva, como es en cardinalidad (su tamañao) el otro intervalo?
+=======
+>>>>>>> e163358e57519885b62ad2aa4ba623c552cc78e0
 
 -   ¿Cuál es la cardinalidad de los *intervalos* que dan ganancia?
 
@@ -467,6 +470,11 @@ hojasordenadas[, acc:= ((tp + tn)/(tp+tn+fp+fn))]
 
 ```
 
+```{r}
+hojasordenadas[,]
+
+```
+
 Desde esta forma podemos ver también al **accuracy** como curva
 
 ```{r}
@@ -726,7 +734,7 @@ Como las cantidades de los conjuntos de datos son distintas, igual van a ser sus
 Ganancia normalizada de entrenamiento:
 
 ```{r}
-ganancia(pred_training[,"evento"], train$clase_binaria) / 0.7
+ganancia(pred_training[,"evento"], train$clase_binaria)/ 0.7 
 ```
 
 Ganancia normalizada de prueba
@@ -735,7 +743,7 @@ Ganancia normalizada de prueba
 ganancia(pred_testing[,"evento"], test$clase_binaria) / 0.3
 ```
 
-Observamos que el **overfitting** se observa en la ganancia de una forma más pronunciadade la afecta a las **AUCs**.
+Observamos que el **overfitting** se observa en la ganancia de una forma más pronunciada afecta a las **AUCs**.
 
 Pero antes de ver como podemos mejorar el **overfitting**, veamos otro fenómeno interesante.
 Modelemos, pero probando distintas semillas.
@@ -964,7 +972,7 @@ resultados_md <- fread("cache/02_DT_md_100.csv")
 Y simplemente visualizamos con una orquesta de violines los distintos valores de `md` y la distribución producto de las 100 semillas para cada uno.
 
 ```{r}
-ggplot(resultados_md[type == "test", ], aes(factor(md), auc)) + geom_violin()
+ggplot(resultados_md[type == "test", ], aes(factor(md), ganancia / 0.3)) + geom_violin()
 
 ```
 
