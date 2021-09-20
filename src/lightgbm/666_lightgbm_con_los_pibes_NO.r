@@ -10,10 +10,11 @@ gc()
 require("data.table")
 require("lightgbm")
 
-setwd("~/buckets/b1/crudoB" )  #establezco la carpeta donde voy a trabajar
+setwd("C:/Archivos/dmeyf")  #se establece el directorio de trabajo
 
 #cargo el dataset
 dataset  <- fread("./datasetsOri/paquete_premium_202009.csv")
+dataset[, .N, clase_ternaria]
 
 #creo la clase_binaria donde en la misma bolsa estan los BAJA+1 y BAJA+2
 dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
@@ -33,7 +34,8 @@ modelo  <- lightgbm( data= dtrain,
                      params= list( objective= "binary",
                                    max_bin= 15,
                                    min_data_in_leaf= 4000,
-                                   learning_rate= 0.05 )  )
+                                   learning_rate= 0.05 ,
+                                   num_iterations = 100)  )
 
 
 #cargo el dataset donde aplico el modelo
