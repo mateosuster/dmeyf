@@ -26,6 +26,13 @@ churn <- target$`BAJA+2` / (target$`BAJA+2` + target$`BAJA+1` + target$CONTINUA)
 
 ```
 
+```{r}
+ggplot(ds[Master_Fvencimiento > -10^6,], aes( Master_Fvencimiento, Visa_Fvencimiento )) +
+  geom_point()
+
+summary(ds$Master_Finiciomora)
+```
+
 
 # EDA
 

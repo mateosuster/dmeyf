@@ -14,6 +14,9 @@
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
 
+t0  <- Sys.time()
+
+
 require("data.table")
 require("rlist")
 require("yaml")
@@ -40,8 +43,10 @@ setwd( directory.root )
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
 kscript           <- "682_lgb_prob_auto"
-karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
-karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
+# karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
+# karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
+karch_generacion  <- "./datasets/paquete_premium_202009_ext.csv"
+karch_aplicacion  <- "./datasets/paquete_premium_202011_ext.csv"
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 #Aqui se cargan los hiperparametros
@@ -52,7 +57,10 @@ hs <- makeParamSet(
          makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L)
         )
 
-campos_malos  <- c( "ccajas_transacciones", "Master_mpagominimo" )   #aqui se deben cargar todos los campos culpables del Data Drifting
+campos_malos  <-  c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
+                          "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
+                          "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
+                          "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui se deben cargar todos los campos culpables del Data Drifting
 
 ksemilla_azar  <- 102191  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
@@ -284,6 +292,13 @@ if(!file.exists(kbayesiana)) {
 } else {
   run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
 }
+
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
+
+
+
 
 
 

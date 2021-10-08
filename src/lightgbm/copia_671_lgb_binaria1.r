@@ -3,7 +3,7 @@
 #256 GB de espacio en el disco local
 #8 vCPU
 
-#clase_binaria1   1={BAJA+2,BAJA+1}    0={CONTINUA}
+#clase_binaria1   1={BAJA+2}    0={BAJA+1,CONTINUA}
 #Optimizacion Bayesiana de hiperparametros de  lightgbm
 #funciona automaticamente con EXPERIMENTOS
 #va generando incrementalmente salidas para kaggle
@@ -32,6 +32,7 @@ switch ( Sys.info()[['sysname']],
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
          Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
        )
+
 #defino la carpeta donde trabajo
 setwd( directory.root )
 
@@ -39,7 +40,7 @@ setwd( directory.root )
 
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
-kscript           <- "682_lgb_prob_auto"
+kscript           <- "671_lgb_binaria1"
 karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
 karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
@@ -49,7 +50,8 @@ hs <- makeParamSet(
          makeNumericParam("learning_rate",    lower= 0.01 , upper=    0.1),
          makeNumericParam("feature_fraction", lower= 0.2  , upper=    1.0),
          makeIntegerParam("min_data_in_leaf", lower= 0    , upper= 8000),
-         makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L)
+         makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L),
+         makeNumericParam("prob_corte",       lower= 0.02499, upper=    0.02501)
         )
 
 campos_malos  <- c( "ccajas_transacciones", "Master_mpagominimo" )   #aqui se deben cargar todos los campos culpables del Data Drifting
@@ -98,21 +100,14 @@ loguear  <- function( reg, arch=NA, folder="./work/", ext=".txt", verbose=TRUE )
 }
 #------------------------------------------------------------------------------
 
-VPROBS_CORTE  <- c()
+PROB_CORTE  <- 0.025
 
 fganancia_logistic_lightgbm   <- function(probs, datos) 
 {
   vlabels  <- getinfo(datos, "label")
-  vpesos   <- getinfo(datos, "weight")
 
-  #solo sumo 48750 si vpesos > 1, hackeo 
-  tbl  <- as.data.table( list( "prob"=probs, "gan"= ifelse( vlabels==1 & vpesos > 1, 48750, -1250 ) ) )
-
-  setorder( tbl, -prob )
-  tbl[ , gan_acum :=  cumsum( gan ) ]
-  gan  <- max( tbl$gan_acum )
-
-  VPROBS_CORTE  <<- c(VPROBS_CORTE,  tbl[ which.max( tbl$gan_acum ) , prob ] )
+  gan  <- sum( (probs > PROB_CORTE  ) *
+               ifelse( vlabels== 1, 48750, -1250 ) )
 
   return( list( "name"= "ganancia", 
                 "value"=  gan,
@@ -127,6 +122,7 @@ EstimarGanancia_lightgbm  <- function( x )
   GLOBAL_iteracion  <<- GLOBAL_iteracion + 1
 
   gc()
+  PROB_CORTE <<- x$prob_corte   #asigno la variable global
 
   kfolds  <- 5   # cantidad de folds para cross validation
 
@@ -151,7 +147,6 @@ EstimarGanancia_lightgbm  <- function( x )
 
   param_completo  <- c( param_basicos, param_variable, x )
 
-  VPROBS_CORTE  <<- c()
   set.seed( 999983 )
   modelocv  <- lgb.cv( data= dtrain,
                        eval= fganancia_logistic_lightgbm,
@@ -167,9 +162,8 @@ EstimarGanancia_lightgbm  <- function( x )
   ganancia_normalizada  <-  ganancia* kfolds  
   attr(ganancia_normalizada ,"extras" )  <- list("num_iterations"= modelocv$best_iter)  #esta es la forma de devolver un parametro extra
 
-  param_completo$num_iterations  <- modelocv$best_iter  #asigno el mejor num_iterations
+  param_completo$num_iterations <- modelocv$best_iter  #asigno el mejor num_iterations
   param_completo["early_stopping_rounds"]  <- NULL
-  param_completo["prob_corte"]  <- mean( VPROBS_CORTE )
 
    #si tengo una ganancia superadora, genero el archivo para Kaggle
    if(  ganancia > GLOBAL_ganancia_max )
@@ -191,7 +185,7 @@ EstimarGanancia_lightgbm  <- function( x )
 
      prediccion  <- predict( modelo, data.matrix( dapply[  , campos_buenos, with=FALSE]) )
 
-     Predicted  <- as.integer( prediccion > param_completo$prob_corte )
+     Predicted  <- as.integer( prediccion > x$prob_corte )
 
      entrega  <- as.data.table( list( "numero_de_cliente"= dapply$numero_de_cliente, 
                                       "Predicted"= Predicted)  )
@@ -236,19 +230,16 @@ if( file.exists(klog) )
 #cargo el dataset donde voy a entrenar el modelo
 dataset  <- fread(karch_generacion)
 
-#creo la clase_binaria2   1={ BAJA+2,BAJA+1}  0={CONTINUA}
-dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
-
+#paso la clase a binaria que tome valores {0,1}  enteros
+dataset[ , clase01 := ifelse( clase_ternaria=="BAJA+2", 1L, 0L) ]
 
 
 #los campos que se van a utilizar
 campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", campos_malos) )
 
 #dejo los datos en el formato que necesita LightGBM
-#uso el weight como un truco ESPANTOSO para saber la clase real
 dtrain  <- lgb.Dataset( data= data.matrix(  dataset[ , campos_buenos, with=FALSE]),
-                        label= dataset$clase01,
-                        weight=  dataset[ , ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)] )
+                        label= dataset$clase01 )
 
 
 #cargo los datos donde voy a aplicar el modelo

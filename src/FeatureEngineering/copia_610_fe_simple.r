@@ -1,56 +1,24 @@
-
-
-# Tareas de preprocesamiento de los datos
+#Feature Engineering
+#creo nuevas variables dentro del mismo mes
+#Condimentar a gusto con nuevas variables
 
 #limpio la memoria
 rm( list=ls() )
 gc()
 
 require("data.table")
-require("ranger")
-require("randomForest")  #solo se usa para imputar nulos
+
 
 
 #Establezco el Working Directory
 # setwd( "~/buckets/b1/crudoB" )
 setwd("C:/Archivos/maestria/dmeyf/")
-dir.create( "./datasets/" )
 
 
-#lectura rapida del dataset  usando fread  de la libreria  data.table
-dataset1  <- fread("./datasetsOri/paquete_premium_202009.csv", stringsAsFactors= TRUE)
-dataset2  <- fread("./datasetsOri/paquete_premium_202011.csv", stringsAsFactors= TRUE)
-
-
-# dtrain[ , clase_binaria := as.factor(ifelse( clase_ternaria=="BAJA+2", "POS", "NEG" )) ] # Binaria 1
-# dtrain[ , clase_binaria := as.factor(ifelse( clase_ternaria=="CONTINUA",  "NEG", "POS" )) ] # Binaria 2
-# dtrain[ , clase_ternaria := NULL ]  #elimino la clase_ternaria, ya no la necesito
-
-
-#Quito el Data Drifting de  "ccajas_transacciones"  "Master_mpagominimo"
-#revisar mactivos_margen, tpaquete1, Master_Fininiciomora, antes de eliminarla. matm_other esta fea
-# matm , tmobile_app, cmobile_app_trx  estan feas
-
-# campos_buenos  <- setdiff( 
-#   # colnames(dtrain),
-#   colnames(dataset),
-#   c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
-#     "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
-#     "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
-#     "Master_mpagominimo", "matm_other", "Master_madelantodolares",
-#      "clase_ternaria", "clase01"
-#   ) )
-
-# dtrain[, campos_buenos, with =FALSE ] # Para seleccionar columnas
-
-
-#Feature Engineering
-#creo nuevas variables dentro del mismo mes
-#Condimentar a gusto con nuevas variables
 EnriquecerDataset <- function( dataset , arch_destino )
 {
   columnas_originales <-  copy(colnames( dataset ))
-  
+
   #INICIO de la seccion donde se deben hacer cambios con variables nuevas
   #se crean los nuevos campos para MasterCard  y Visa, teniendo en cuenta los NA's
   #varias formas de combinar Visa_status y Master_status
@@ -59,19 +27,19 @@ EnriquecerDataset <- function( dataset , arch_destino )
   dataset[ , mv_status03       := pmax( ifelse( is.na(Master_status), 10, Master_status) , ifelse( is.na(Visa_status), 10, Visa_status) ) ]
   dataset[ , mv_status04       := ifelse( is.na(Master_status), 10, Master_status)  +  ifelse( is.na(Visa_status), 10, Visa_status)  ]
   dataset[ , mv_status05       := ifelse( is.na(Master_status), 10, Master_status)  +  100*ifelse( is.na(Visa_status), 10, Visa_status)  ]
-  
+
   dataset[ , mv_status06       := ifelse( is.na(Visa_status), 
                                           ifelse( is.na(Master_status), 10, Master_status), 
                                           Visa_status)  ]
-  
+
   dataset[ , mv_status07       := ifelse( is.na(Master_status), 
                                           ifelse( is.na(Visa_status), 10, Visa_status), 
                                           Master_status)  ]
-  
-  
+
+
   #combino MasterCard y Visa
   dataset[ , mv_mfinanciacion_limite := rowSums( cbind( Master_mfinanciacion_limite,  Visa_mfinanciacion_limite) , na.rm=TRUE ) ]
-  
+
   dataset[ , mv_Fvencimiento_min         := pmin( Master_Fvencimiento, Visa_Fvencimiento, na.rm = TRUE) ]
   dataset[ , mv_Fvencimiento_max         := pmax( Master_Fvencimiento, Visa_Fvencimiento, na.rm = TRUE) ] #MS
   
@@ -80,10 +48,10 @@ EnriquecerDataset <- function( dataset , arch_destino )
   
   dataset[ , mv_msaldototal          := rowSums( cbind( Master_msaldototal,  Visa_msaldototal) , na.rm=TRUE ) ]
   dataset[ , mv_msaldopesos          := rowSums( cbind( Master_msaldopesos,  Visa_msaldopesos) , na.rm=TRUE ) ]
-  
+
   dataset[ , mv_msaldototal_avg := mean( c(Master_msaldototal,  Visa_msaldototal) , na.rm=TRUE ), by =numero_de_cliente  ] #MS
   dataset[ , mv_msaldopesos_avg := mean( c(Master_msaldopesos,  Visa_msaldopesos) , na.rm=TRUE ), by =numero_de_cliente  ] #MS 
-  
+    
   dataset[ , mv_msaldodolares        := rowSums( cbind( Master_msaldodolares,  Visa_msaldodolares) , na.rm=TRUE ) ]
   dataset[ , mv_mconsumospesos       := rowSums( cbind( Master_mconsumospesos,  Visa_mconsumospesos) , na.rm=TRUE ) ]
   dataset[ , mv_mconsumosdolares     := rowSums( cbind( Master_mconsumosdolares,  Visa_mconsumosdolares) , na.rm=TRUE ) ]
@@ -99,7 +67,7 @@ EnriquecerDataset <- function( dataset , arch_destino )
   dataset[ , mv_cconsumos            := rowSums( cbind( Master_cconsumos,  Visa_cconsumos) , na.rm=TRUE ) ]
   dataset[ , mv_cadelantosefectivo   := rowSums( cbind( Master_cadelantosefectivo,  Visa_cadelantosefectivo) , na.rm=TRUE ) ]
   dataset[ , mv_mpagominimo          := rowSums( cbind( Master_mpagominimo,  Visa_mpagominimo) , na.rm=TRUE ) ]
-  
+
   #a partir de aqui juego con la suma de Mastercard y Visa
   dataset[ , mvr_Master_mlimitecompra:= Master_mlimitecompra / mv_mlimitecompra ]
   dataset[ , mvr_Visa_mlimitecompra  := Visa_mlimitecompra / mv_mlimitecompra ]
@@ -117,7 +85,7 @@ EnriquecerDataset <- function( dataset , arch_destino )
   dataset[ , mvr_mpagosdolares       := mv_mpagosdolares / mv_mlimitecompra ]
   dataset[ , mvr_mconsumototal       := mv_mconsumototal  / mv_mlimitecompra ]
   dataset[ , mvr_mpagominimo         := mv_mpagominimo  / mv_mlimitecompra ]
-  
+
   
   # Otras MS
   dataset[, m_cons_tar_limite := Master_mconsumospesos / Master_mlimitecompra ]
@@ -142,8 +110,8 @@ EnriquecerDataset <- function( dataset , arch_destino )
     cat( "ATENCION, hay", infinitos_qty, "valores infinitos en tu dataset. Seran pasados a NA\n" )
     dataset[mapply(is.infinite, dataset)] <- NA
   }
-  
-  
+
+
   #valvula de seguridad para evitar valores NaN  que es 0/0
   #paso los NaN a 0 , decision polemica si las hay
   #se invita a asignar un valor razonable segun la semantica del campo creado
@@ -155,11 +123,11 @@ EnriquecerDataset <- function( dataset , arch_destino )
     cat( "Si no te gusta la decision, modifica a gusto el programa!\n\n")
     dataset[mapply(is.nan, dataset)] <- 0
   }
-  
+
   #FIN de la seccion donde se deben hacer cambios con variables nuevas
-  
+
   columnas_extendidas <-  copy( setdiff(  colnames(dataset), columnas_originales ) )
-  
+
   #grabo con nombre extendido
   fwrite( dataset,
           file=arch_destino,
@@ -167,6 +135,12 @@ EnriquecerDataset <- function( dataset , arch_destino )
 }
 #------------------------------------------------------------------------------
 
+dir.create( "./datasets/" )
+
+
+#lectura rapida del dataset  usando fread  de la libreria  data.table
+dataset1  <- fread("./datasetsOri/paquete_premium_202009.csv")
+dataset2  <- fread("./datasetsOri/paquete_premium_202011.csv")
 
 EnriquecerDataset( dataset1, "./datasets/paquete_premium_202009_ext.csv" )
 EnriquecerDataset( dataset2, "./datasets/paquete_premium_202011_ext.csv" )

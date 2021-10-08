@@ -6,10 +6,10 @@ require("data.table")
 
 
 #Aqui comienza el programa
-setwd("C:/Archivos/maestria_cs_datos/Materias/DM_EyF/dmeyf/")
+setwd("C:/Archivos/maestria/dmeyf/")
 
-datasetA  <- fread( "../datasetsOri/paquete_premium_202009.csv" )
-datasetB  <- fread( "../datasetsOri/paquete_premium_202011.csv" )
+datasetA  <- fread( "./datasetsOri/paquete_premium_202009.csv" )
+datasetB  <- fread( "./datasetsOri/paquete_premium_202011.csv" )
 
 sum(datasetA$internet)
 sum(datasetB$internet)
@@ -26,7 +26,7 @@ hist(datasetB$mtarjeta_master_descuentos)
 campos_buenos  <- setdiff(  colnames( datasetA),  c("numero_de_cliente","foto_mes","clase_ternaria" ) )
 
 
-pdf("../work/densidades_01.pdf")
+pdf("./work/densidades_01.pdf")
 for( campo in  campos_buenos )
 {
   cat( campo, "  " )
