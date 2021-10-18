@@ -51,10 +51,18 @@ kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 #Aqui se cargan los hiperparametros
 hs <- makeParamSet( 
-         makeNumericParam("learning_rate",    lower= 0.01 , upper=    0.1),
-         makeNumericParam("feature_fraction", lower= 0.2  , upper=    1.0),
-         makeIntegerParam("min_data_in_leaf", lower= 0    , upper= 8000),
-         makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L)
+                    makeNumericParam("learning_rate",    lower=    0.02 , upper=    0.1),
+                    makeNumericParam("feature_fraction", lower=      0.1  , upper=    1.0),
+                    makeNumericParam("bagging_fraction", lower=      0.1  , upper=    1.0),
+                    makeNumericParam("path_smooth", lower=      0.1  , upper=    1.0),
+                    
+                    makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 8000L),
+                    makeIntegerParam("num_leaves",       lower=    8L   , upper= 1024L),
+                    makeIntegerParam("lambda_l1",       lower=    0   , upper= 100),
+                    makeIntegerParam("lambda_l2",       lower=    0   , upper= 200),
+                    makeIntegerParam("min_gain_to_split",       lower=    0   , upper= 15),
+                    makeIntegerParam("max_depth",       lower=    -1L   , upper= 2000L)
+                    # makeIntegerParam("max_bin",       lower=    2L   , upper= 255L)
         )
 
 campos_malos  <-  c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
@@ -62,7 +70,7 @@ campos_malos  <-  c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpay
                           "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
                           "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui se deben cargar todos los campos culpables del Data Drifting
 
-ksemilla_azar  <- 102191  #Aqui poner la propia semilla
+ksemilla_azar  <- 152940  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
 #Funcion que lleva el registro de los experimentos
 
@@ -145,10 +153,10 @@ EstimarGanancia_lightgbm  <- function( x )
                           feature_pre_filter= FALSE,
                           verbosity= -100,
                           seed= 999983,
-                          max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
-                          min_gain_to_split= 0.0, #por ahora, lo dejo fijo
-                          lambda_l1= 0.0,         #por ahora, lo dejo fijo
-                          lambda_l2= 0.0,         #por ahora, lo dejo fijo
+                          # max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
+                          # min_gain_to_split= 0.0, #por ahora, lo dejo fijo
+                          # lambda_l1= 0.0,         #por ahora, lo dejo fijo
+                          # lambda_l2= 0.0,         #por ahora, lo dejo fijo
                           max_bin= 31,            #por ahora, lo dejo fijo
                           num_iterations= 9999,    #un numero muy grande, lo limita early_stopping_rounds
                           force_row_wise= TRUE    #para que los alumnos no se atemoricen con tantos warning

@@ -1,4 +1,4 @@
-#source("~/buckets/b1/crudoB/R/823_epic.r")
+#source("~/buckets/b1/crudoB/R/847_epic_stacking.r")
 
 #Necesita para correr en Google Cloud
 #16 GB de memoria RAM
@@ -18,6 +18,7 @@
 #limpio la memoria
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
+t0  <- Sys.time()
 
 require("data.table")
 require("rlist")
@@ -33,9 +34,9 @@ require("mlrMBO")
 #para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
 #cambiar aqui las rutas en su maquina
 switch ( Sys.info()[['sysname']],
-         Windows = { directory.root  <-  "M:\\" },   #Windows
+         Windows = { directory.root  <-  "C:/Archivos/maestria/dmeyf/" },   #Windows
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
-         Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
+         Linux   = { directory.root  <-  "~/buckets/b1/crudoB/" } #Google Cloud
        )
 #defino la carpeta donde trabajo
 setwd( directory.root )
@@ -44,9 +45,9 @@ setwd( directory.root )
 
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
-kscript         <- "823_epic"
+kscript         <- "847_epic_stacking"
 
-karch_dataset    <- "./datasets/dataset_epic_simple_v007.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
+karch_dataset    <- "./datasets/dataset_stacking_v001.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
 
 kapply_mes       <- c(202011)  #El mes donde debo aplicar el modelo
 
@@ -67,15 +68,16 @@ kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 hs <- makeParamSet( 
          makeNumericParam("learning_rate",    lower=    0.02 , upper=    0.1),
          makeNumericParam("feature_fraction", lower=    0.1  , upper=    1.0),
-         makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 8000L),
-         makeIntegerParam("num_leaves",       lower=    8L   , upper= 1024L),
-         makeIntegerParam("lambda_l1",       lower=    0   , upper= 100),
-         makeIntegerParam("lambda_l2",       lower=    0   , upper= 200),
-         makeIntegerParam("min_gain_to_split",       lower=    0   , upper= 200),
-         makeIntegerParam("max_depth",       lower=    -1L   , upper= 2000L)
+         makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 200L),
+         makeIntegerParam("num_leaves",       lower=    8L   , upper= 500L)
+         # makeIntegerParam("lambda_l1",       lower=    0   , upper= 10),
+         # makeIntegerParam("lambda_l2",       lower=    0   , upper= 19)
         )
 
-campos_malos  <- c()   #aqui se deben cargar todos los campos culpables del Data Drifting
+campos_malos  <-c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
+                  "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
+                  "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
+                  "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui se deben cargar todos los campos culpables del Data Drifting
 
 ksemilla_azar  <- 102191  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
@@ -299,11 +301,11 @@ EstimarGanancia_lightgbm  <- function( x )
                           feature_pre_filter= FALSE,
                           verbosity= -100,
                           seed= 999983,
-                          # max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
-                          # min_gain_to_split= 0.0, #por ahora, lo dejo fijo
-                          # lambda_l1= 0.0,         #por ahora, lo dejo fijo
-                          # lambda_l2= 0.0,         #por ahora, lo dejo fijo
-                          max_bin= 31,            #por ahora, lo dejo fijo
+                          max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
+                          min_gain_to_split= 0.0, #por ahora, lo dejo fijo
+                          lambda_l1= 0.0,         #por ahora, lo dejo fijo
+                          lambda_l2= 0.0,         #por ahora, lo dejo fijo
+                          max_bin= 5,            #por ahora, lo dejo fijo
                           num_iterations= 9999,   #un numero muy grande, lo limita early_stopping_rounds
                           force_row_wise= TRUE    #para que los alumnos no se atemoricen con tantos warning
                         )
@@ -470,7 +472,10 @@ if(!file.exists(kbayesiana)) {
   run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
 }
 
-
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
+write(delta, file = "tiempo_ejecucion_847_01.txt")
 
 #apagado de la maquina virtual, pero NO se borra
 system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)

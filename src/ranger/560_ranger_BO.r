@@ -6,6 +6,9 @@
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
 
+t0  <- Sys.time()
+
+
 require("data.table")
 require("rlist")
 require("yaml")
@@ -20,7 +23,8 @@ require("mlrMBO")
 
 
 #defino la carpeta donde trabajo
-setwd( "~/buckets/b1/crudoB/"  )
+# setwd( "~/buckets/b1/crudoB/"  )
+setwd( "C:/Archivos/maestria/dmeyf/"  )
 
 
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
@@ -28,6 +32,8 @@ kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es pa
 kscript           <- "560_ranger_BO"
 karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
 karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
+# karch_generacion  <- "./datasets/paquete_premium_202009_ext.csv"
+# karch_aplicacion  <- "./datasets/paquete_premium_202011_ext.csv"
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 hs  <- makeParamSet(
@@ -250,6 +256,11 @@ surr.km  <-  makeLearner("regr.km", predict.type= "se", covtype= "matern3_2", co
 if(!file.exists(kbayesiana)) {
   run  <- mbo(obj.fun, learner = surr.km, control = ctrl)
 } else  run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
+
+
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
 
 
 quit( save="no" )

@@ -24,11 +24,13 @@ require("lightgbm")
 require("DiceKriging")
 require("mlrMBO")
 
+t0  <- Sys.time()
+
 
 #para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
 #cambiar aqui las rutas en su maquina
 switch ( Sys.info()[['sysname']],
-         Windows = { directory.root  <-  "M:\\" },   #Windows
+         Windows = { directory.root  <-  "C:/Archivos/maestria/dmeyf/" },   #Windows
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
          Linux   = { directory.root  <-  "~/buckets/b1/crudoB/" } #Google Cloud
        )
@@ -40,8 +42,10 @@ setwd( directory.root )
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
 kscript           <- "672_lgb_binaria2"
-karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
-karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
+# karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
+# karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
+karch_generacion  <- "./datasets/paquete_premium_202009_ext.csv"
+karch_aplicacion  <- "./datasets/paquete_premium_202011_ext.csv"
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 #Aqui se cargan los hiperparametros
@@ -53,7 +57,10 @@ hs <- makeParamSet(
          makeNumericParam("prob_corte",       lower= 0.020, upper=    0.055)
         )
 
-campos_malos  <- c( "ccajas_transacciones", "Master_mpagominimo" )   #aqui se deben cargar todos los campos culpables del Data Drifting
+campos_malos  <- c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
+                   "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
+                   "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
+                   "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui se deben cargar todos los campos culpables del Data Drifting
 
 ksemilla_azar  <- 102191  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
@@ -279,6 +286,10 @@ if(!file.exists(kbayesiana)) {
 } else {
   run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
 }
+
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
 
 
 

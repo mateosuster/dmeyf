@@ -18,6 +18,7 @@
 #limpio la memoria
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
+t0  <- Sys.time()
 
 require("data.table")
 require("rlist")
@@ -33,7 +34,7 @@ require("mlrMBO")
 #para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
 #cambiar aqui las rutas en su maquina
 switch ( Sys.info()[['sysname']],
-         Windows = { directory.root  <-  "M:\\" },   #Windows
+         Windows = { directory.root  <-  "C:/Archivos/maestria/dmeyf/" },   #Windows
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
          Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
        )
@@ -46,7 +47,7 @@ kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es pa
 
 kscript         <- "823_epic"
 
-karch_dataset    <- "./datasets/dataset_epic_simple_v007.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
+karch_dataset    <- "./datasets/dataset_epic_simple_v010.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
 
 kapply_mes       <- c(202011)  #El mes donde debo aplicar el modelo
 
@@ -66,13 +67,13 @@ kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 #Aqui se cargan los hiperparametros
 hs <- makeParamSet( 
          makeNumericParam("learning_rate",    lower=    0.02 , upper=    0.1),
-         makeNumericParam("feature_fraction", lower=    0.1  , upper=    1.0),
+         makeNumericParam("feature_fraction", lower=    0.1  , upper=    0.9),
          makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 8000L),
-         makeIntegerParam("num_leaves",       lower=    8L   , upper= 1024L),
+         makeIntegerParam("num_leaves",       lower=    8L   , upper= 800L),
          makeIntegerParam("lambda_l1",       lower=    0   , upper= 100),
          makeIntegerParam("lambda_l2",       lower=    0   , upper= 200),
          makeIntegerParam("min_gain_to_split",       lower=    0   , upper= 200),
-         makeIntegerParam("max_depth",       lower=    -1L   , upper= 2000L)
+         makeIntegerParam("max_depth",       lower=    -1L   , upper= 500L)
         )
 
 campos_malos  <- c()   #aqui se deben cargar todos los campos culpables del Data Drifting
@@ -293,7 +294,12 @@ EstimarGanancia_lightgbm  <- function( x )
   gc()
 
   param_basicos  <- list( objective= "binary",
-                          metric= "custom",
+                         
+                          boosting_type = "rf", 
+                          bagging_freq = 1,
+                          bagging_fraction = 0.66, 
+
+                           metric= "custom",
                           first_metric_only= TRUE,
                           boost_from_average= TRUE,
                           feature_pre_filter= FALSE,
@@ -303,7 +309,7 @@ EstimarGanancia_lightgbm  <- function( x )
                           # min_gain_to_split= 0.0, #por ahora, lo dejo fijo
                           # lambda_l1= 0.0,         #por ahora, lo dejo fijo
                           # lambda_l2= 0.0,         #por ahora, lo dejo fijo
-                          max_bin= 31,            #por ahora, lo dejo fijo
+                          max_bin= 20,            #por ahora, lo dejo fijo
                           num_iterations= 9999,   #un numero muy grande, lo limita early_stopping_rounds
                           force_row_wise= TRUE    #para que los alumnos no se atemoricen con tantos warning
                         )
@@ -470,6 +476,10 @@ if(!file.exists(kbayesiana)) {
   run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
 }
 
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
+write(delta, file = "tiempo_ejecucion_823_04.txt")
 
 
 #apagado de la maquina virtual, pero NO se borra

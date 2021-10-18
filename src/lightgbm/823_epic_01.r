@@ -18,6 +18,7 @@
 #limpio la memoria
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
+t0  <- Sys.time()
 
 require("data.table")
 require("rlist")
@@ -33,7 +34,7 @@ require("mlrMBO")
 #para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
 #cambiar aqui las rutas en su maquina
 switch ( Sys.info()[['sysname']],
-         Windows = { directory.root  <-  "M:\\" },   #Windows
+         Windows = { directory.root  <-  "C:/Archivos/maestria/dmeyf/" },   #Windows
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
          Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
        )
@@ -46,7 +47,7 @@ kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es pa
 
 kscript         <- "823_epic"
 
-karch_dataset    <- "./datasets/dataset_epic_simple_v007.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
+karch_dataset    <- "./datasets/dataset_epic_simple_v010.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
 
 kapply_mes       <- c(202011)  #El mes donde debo aplicar el modelo
 
@@ -72,10 +73,18 @@ hs <- makeParamSet(
          makeIntegerParam("lambda_l1",       lower=    0   , upper= 100),
          makeIntegerParam("lambda_l2",       lower=    0   , upper= 200),
          makeIntegerParam("min_gain_to_split",       lower=    0   , upper= 200),
-         makeIntegerParam("max_depth",       lower=    -1L   , upper= 2000L)
+         makeIntegerParam("max_depth",       lower=    -1L   , upper= 2000L),
+         
+         makeNumericParam("bagging_fraction", lower=      0.1  , upper=    1.0),
+         makeNumericParam("path_smooth", lower=      0.1  , upper=    1.0)
+         # makeIntegerParam("max_bin",       lower=    2L   , upper= 31L)
+         
         )
 
-campos_malos  <- c()   #aqui se deben cargar todos los campos culpables del Data Drifting
+campos_malos  <- c("internet", "mactivos_margen", "foto_mes", "tpaquete1","mpayroll",
+                   "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
+                   "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
+                   "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui se deben cargar todos los campos culpables del Data Drifting
 
 ksemilla_azar  <- 102191  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
@@ -470,7 +479,10 @@ if(!file.exists(kbayesiana)) {
   run  <- mboContinue( kbayesiana )   #retomo en caso que ya exista
 }
 
-
+t1  <- Sys.time()
+delta  <- as.numeric(  t1 - t0, units = "mins")  #calculo la diferencia de tiempos
+print( delta) #imprimo
+write(delta, file = "tiempo_ejecucion_823_01.txt")
 
 #apagado de la maquina virtual, pero NO se borra
 system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)

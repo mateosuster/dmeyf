@@ -10,7 +10,7 @@ library("lightgbm")
 
 # Levantamos los datos
 
-setwd("/home/rstudio/repo/datasetsOri/")
+setwd("C:/Archivos/maestria/dmeyf/datasetsOri/")
 # Poner el dataset del FE
 ds_fe <- "paquete_premium_202009.csv"
 ds <- fread(ds_fe, showProgress = FALSE)
@@ -58,6 +58,15 @@ val_scores_lgbm <- function(datos, target, params, folds) {
   }
   validation
 }
+# 
+# validation <- numeric(length(target))
+# # for (f in folds) {
+#    # usamos 4 folds para entranar
+# ds_train  <- lgb.Dataset( data=  data.matrix(ds[folds, with = FALSE]), 
+#                           label = clase_binaria[folds , with = FALSE] )
+# m <- lgb.train(ds_train, params = params, verbose = -1)
+#    # usamos el restante para generar el valor 
+#    # validation[-f] <- predict(m,data.matrix(datos[-f])) }
 
 m1_scores <- val_scores_lgbm(ds, clase_binaria, params_gbdt, folds)
 m2_scores <- val_scores_lgbm(ds, clase_binaria, params_rf, folds)

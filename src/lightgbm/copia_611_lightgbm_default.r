@@ -15,6 +15,8 @@ setwd("C:/Archivos/maestria/dmeyf/")
 
 #cargo el dataset donde voy a entrenar
 dataset  <- fread("./datasetsOri/paquete_premium_202009.csv")
+write.csv(data.frame(names(dataset)), "../../repos/dmeyf_tp1/preprocesamiento/campos_a_combinar.csv")
+
 
 #paso la clase a binaria que tome valores {0,1}  enteros
 dataset[ , clase01 := ifelse( clase_ternaria=="BAJA+2", 1L, 0L) ]
