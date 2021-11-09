@@ -27,7 +27,7 @@ palancas$version  <- "v951"   #Muy importante, ir cambiando la version
 palancas$variablesdrift  <- c("internet", "mactivos_margen", "tpaquete1","mpayroll",
                               "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
                               "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
-                              "Master_mpagominimo", "matm_other", "Master_madelantodolares" )   #aqui van las columnas que se quieren eliminar
+                              "Master_mpagominimo", "matm_other")# , "Master_madelantodolares" )   #aqui van las columnas que se quieren eliminar
 
 palancas$corregir <-  TRUE    # TRUE o FALSE
 
