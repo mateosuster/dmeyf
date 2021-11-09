@@ -323,7 +323,7 @@ AgregarVariables  <- function( dataset )
   
   
   dataset[, cuentas_totales := sum(c(tcuentas,ccuenta_corriente, ccaja_ahorro), na.rm = T)]
-  dataset[, tpaquete := sum(c(tpaquete1,tpaquete3, tpaquete4), na.rm = T)]
+  # dataset[, tpaquete := sum(c(tpaquete1,tpaquete3, tpaquete4), na.rm = T)]
   dataset[, cta_corr_ca := sum(c(mcuenta_corriente,mcaja_ahorro), na.rm = T)]
   dataset[, cta_corr_ca_ad := sum(c(mcaja_ahorro_adicional,mcuenta_corriente_adicional), na.rm = T)]
   dataset[, cta_corr_ca_tot := sum(c(cta_corr_ca_ad,cta_corr_ca), na.rm = T)]
