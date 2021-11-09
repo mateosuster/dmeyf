@@ -251,7 +251,7 @@ AgregarVariables  <- function( dataset )
   dataset[ , mv_mconsumosdolares     := rowSums( cbind( Master_mconsumosdolares,  Visa_mconsumosdolares) , na.rm=TRUE ) ]
   dataset[ , mv_mlimitecompra        := rowSums( cbind( Master_mlimitecompra,  Visa_mlimitecompra) , na.rm=TRUE ) ]
   dataset[ , mv_madelantopesos       := rowSums( cbind( Master_madelantopesos,  Visa_madelantopesos) , na.rm=TRUE ) ]
-  dataset[ , mv_madelantodolares     := rowSums( cbind( Master_madelantodolares,  Visa_madelantodolares) , na.rm=TRUE ) ]
+  # dataset[ , mv_madelantodolares     := rowSums( cbind( Master_madelantodolares,  Visa_madelantodolares) , na.rm=TRUE ) ]
   dataset[ , mv_fultimo_cierre       := pmax( Master_fultimo_cierre, Visa_fultimo_cierre, na.rm = TRUE) ]
   dataset[ , mv_mpagado              := rowSums( cbind( Master_mpagado,  Visa_mpagado) , na.rm=TRUE ) ]
   dataset[ , mv_mpagospesos          := rowSums( cbind( Master_mpagospesos,  Visa_mpagospesos) , na.rm=TRUE ) ]
@@ -260,7 +260,6 @@ AgregarVariables  <- function( dataset )
   dataset[ , mv_mconsumototal        := rowSums( cbind( Master_mconsumototal,  Visa_mconsumototal) , na.rm=TRUE ) ]
   dataset[ , mv_cconsumos            := rowSums( cbind( Master_cconsumos,  Visa_cconsumos) , na.rm=TRUE ) ]
   dataset[ , mv_cadelantosefectivo   := rowSums( cbind( Master_cadelantosefectivo,  Visa_cadelantosefectivo) , na.rm=TRUE ) ]
-  dataset[ , mv_mpagominimo          := rowSums( cbind( Master_mpagominimo,  Visa_mpagominimo) , na.rm=TRUE ) ]
 
   #a partir de aqui juego con la suma de Mastercard y Visa
   dataset[ , mvr_Master_mlimitecompra:= Master_mlimitecompra / mv_mlimitecompra ]
@@ -344,8 +343,7 @@ AgregarVariables  <- function( dataset )
                                   cantidad_tarjetas,cuentas_totales,cplazo_fijo ,
                                   cinversion1, cproductos,cliente_vip ,cpayroll_trx,cpayroll2_trx,ctarjeta_visa_debitos_automaticos
                                   ,ctarjeta_master_debitos_automaticos ,ccuenta_debitos_automaticos, ccaja_seguridad ,
-                                  ccomisiones_mantenimiento, ccomisiones_otras, tcallcenter,thomebanking,
-                                  tmobile_app), na.rm = T)]
+                                  ccomisiones_mantenimiento, ccomisiones_otras, tcallcenter,thomebanking), na.rm = T)]
   
   dataset[, seguros :=sum(c(cseguro_vida , cseguro_auto ,cseguro_vivienda , cseguro_accidentes_personales), na.rm = T) ]
   dataset[, descuentos :=sum(c(ctarjeta_visa_descuentos, ctarjeta_master_descuentos), na.rm = T) ]
@@ -374,8 +372,7 @@ AgregarVariables  <- function( dataset )
   dataset[, ccajas := sum(c(ccajas_transacciones,ccajas_consultas, ccajas_depositos, ccajas_extracciones,
                             ccajas_otras,catm_trx), na.rm = T) ] 
   dataset[, catm := sum(c(catm_trx, catm_trx_other), na.rm = T) ]
-  dataset[, matm := sum(c(matm, matm_other), na.rm = T) ]
-  dataset[, transacciones_2 := cmobile_app_trx *chomebanking_transacciones ]
+
   
   dataset[, financiacion_limit_compra := mv_mfinanciacion_limite + mv_mlimitecompra ]
   dataset[, transferencias_x := mtransferencias_recibidas* ctransferencias_recibidas]
