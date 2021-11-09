@@ -315,8 +315,8 @@ AgregarVariables  <- function( dataset )
   dataset[, edad_nro_cliente := cliente_edad / numero_de_cliente ]
   
   dataset[, rentabilidad_anual := mrentabilidad / mrentabilidad_annual ]
-  dataset[, rentabilidad_total := sum(c(mcomisiones , mrentabilidad_annual ,mrentabilidad,mactivos_margen,mpasivos_margen), na.rm = T)]
-  dataset[, rentabilidad_total_2 := sum(c(mcomisiones , mrentabilidad_annual,mactivos_margen,mpasivos_margen), na.rm = T)]
+  dataset[, rentabilidad_total := sum(c(mcomisiones , mrentabilidad_annual ,mrentabilidad,mpasivos_margen), na.rm = T)]
+  dataset[, rentabilidad_total_2 := sum(c(mcomisiones , mrentabilidad_annual,mpasivos_margen), na.rm = T)]
   dataset[, rentabilidad_total_3 := sum(c(mcuentas_saldo , rentabilidad_total_2), na.rm = T)]
   dataset[, rentabilidad_total_4 :=  rentabilidad_total_2/mcuentas_saldo]
   dataset[, rentabilidad_total_productos := rentabilidad_total/cproductos]
@@ -343,7 +343,7 @@ AgregarVariables  <- function( dataset )
   dataset[ ,cantidad_tarjetas          := sum(c(ctarjeta_debito  , ctarjeta_visa ,ctarjeta_master), na.rm = T) ]
   dataset[ ,monto_debito_tarjetas          := mautoservicio/ sum(c(ctarjeta_debito  , ctarjeta_visa), na.rm = T) ]
   dataset[, vm_transacciones_2 := vm_transacciones *cantidad_tarjetas ]
-  dataset[, payroll_total := mpayroll  * mpayroll2 ]
+  # dataset[, payroll_total := mpayroll  * mpayroll2 ]
   dataset[, costo_salida := sum(c(cprestamos_personales , cprestamos_hipotecarios , cprestamos_prendarios, 
                                   cantidad_tarjetas,cuentas_totales,cplazo_fijo ,
                                   cinversion1, cproductos,cliente_vip ,cpayroll_trx,cpayroll2_trx,ctarjeta_visa_debitos_automaticos
