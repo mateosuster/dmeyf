@@ -359,8 +359,8 @@ AgregarVariables  <- function( dataset )
                                          mttarjeta_master_debitos_automaticos), na.rm = T)]
   dataset[, costo_salida_2 := sum(c(mprestamos_personales , mprestamos_prendarios , mprestamos_hipotecarios ,
                                     mdescubierto_preacordado), na.rm = T) ]
-  dataset[, costo_salida_3 := sum(c(costo_salida_2, payroll_total), na.rm = T) ]
-  dataset[, costo_salida_4 := sum(c(costo_salida_3, inversiones ,mplazo_fijo, debitos_automaticos ), na.rm = T)]
+  # dataset[, costo_salida_3 := sum(c(costo_salida_2, payroll_total), na.rm = T) ]
+  dataset[, costo_salida_4 := sum(c(costo_salida_2, inversiones ,mplazo_fijo, debitos_automaticos ), na.rm = T)]
   dataset[, costo_salida_5 := sum(c(costo_salida_4, mv_tarjeta_consumo ), na.rm = T)]
   dataset[, m_servicios := sum(c(mpagodeservicios, mpagomiscuentas ), na.rm = T)]
   dataset[, c_servicios := sum(c(cpagodeservicios, cpagomiscuentas ), na.rm = T)]
