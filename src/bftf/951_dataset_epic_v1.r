@@ -285,6 +285,7 @@ AgregarVariables  <- function( dataset )
   #Aqui debe usted agregar sus propias nuevas variables
 
   # Otras MS
+  dataset[ , mv_mconsumostotales     := mv_mconsumosdolares+mv_mconsumospesos  ] #MS
   
   dataset[ , mv_delinquency := rowSums( cbind( Master_delinquency,  Visa_delinquency) , na.rm=TRUE ) ] #MS
   dataset[, suma_cons_limi := sum(c(mv_mconsumostotales, mv_mlimitecompra, mv_mpagado))] # MS
