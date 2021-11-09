@@ -27,7 +27,8 @@ palancas$version  <- "v951"   #Muy importante, ir cambiando la version
 palancas$variablesdrift  <- c("internet", "mactivos_margen", "tpaquete1","mpayroll",
                               "mcajeros_propios_descuentos", "tmobile_app", "cmobile_app_trx",
                               "mtarjeta_visa_descuentos", "mtarjeta_master_descuentos",
-                              "Master_mpagominimo", "matm_other")# , "Master_madelantodolares" )   #aqui van las columnas que se quieren eliminar
+                              "matm_other")# , "Master_madelantodolares", "Master_mpagominimo" )   #aqui van las columnas que se quieren eliminar
+
 
 palancas$corregir <-  TRUE    # TRUE o FALSE
 
@@ -277,11 +278,14 @@ AgregarVariables  <- function( dataset )
   dataset[ , mvr_mpagospesos         := mv_mpagospesos / mv_mlimitecompra ]
   dataset[ , mvr_mpagosdolares       := mv_mpagosdolares / mv_mlimitecompra ]
   dataset[ , mvr_mconsumototal       := mv_mconsumototal  / mv_mlimitecompra ]
+  
+  dataset[ , mv_mpagominimo          := rowSums( cbind( Master_mpagominimo,  Visa_mpagominimo) , na.rm=TRUE ) ]
   dataset[ , mvr_mpagominimo         := mv_mpagominimo  / mv_mlimitecompra ]
 
   #Aqui debe usted agregar sus propias nuevas variables
 
   # Otras MS
+  
   dataset[ , mv_delinquency := rowSums( cbind( Master_delinquency,  Visa_delinquency) , na.rm=TRUE ) ] #MS
   dataset[, suma_cons_limi := sum(c(mv_mconsumostotales, mv_mlimitecompra, mv_mpagado))] # MS
   
