@@ -519,7 +519,7 @@ CanaritosImportancia  <- function( canaritos_ratio=0.2 )
   tb_importancia  <- lgb.importance( model= modelo )
   tb_importancia[  , pos := .I ]
 
-  fwrite( tb_importancia, file="./work/impo.txt",  , sep="\t" )
+  fwrite( tb_importancia, file="./work/impo.txt",   sep="\t" )
 
   umbral  <- tb_importancia[ Feature %like% "canarito", median(pos) + sd(pos) ]  #Atencion corto en la mediana !!
 
