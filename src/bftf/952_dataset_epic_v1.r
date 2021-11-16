@@ -22,15 +22,15 @@ setwd( directory.root )
 
 palancas  <- list()  #variable con las palancas para activar/desactivar
 
-palancas$version  <- "vidapropia_01"   #Muy importante, ir cambiando la version
+palancas$version  <- "v952"   #Muy importante, ir cambiando la version
 
 palancas$variablesdrift  <- c()   #aqui van las columnas que se quieren eliminar
 
 palancas$corregir <-  TRUE    # TRUE o FALSE
 
-palancas$nuevasvars <-  TRUE  #si quiero hacer Feature Engineering manual
+palancas$nuevasvars <-  FALSE  #si quiero hacer Feature Engineering manual
 
-palancas$dummiesNA  <-  TRUE #La idea de Santiago Dellachiesa
+palancas$dummiesNA  <-  FALSE #La idea de Santiago Dellachiesa
 
 palancas$lag1   <- TRUE    #lag de orden 1
 palancas$delta1 <- TRUE    # campo -  lag de orden 1 
@@ -38,18 +38,29 @@ palancas$lag2   <- TRUE
 palancas$delta2 <- TRUE
 palancas$lag3   <- TRUE
 palancas$delta3 <- TRUE
-palancas$lag4   <- TRUE
-palancas$delta4 <- TRUE
-palancas$lag5   <- TRUE
-palancas$delta5 <- TRUE
-palancas$lag6   <- TRUE
-palancas$delta6 <- TRUE
+palancas$lag4   <- FALSE
+palancas$delta4 <- FALSE
+palancas$lag5   <- FALSE
+palancas$delta5 <- FALSE
+palancas$lag6   <- FALSE
+palancas$delta6 <- FALSE
+
+palancas$promedio3  <- FALSE  #promedio  de los ultimos 3 meses
+palancas$promedio6  <- FALSE
+
+palancas$minimo3  <- FALSE  #minimo de los ultimos 3 meses
+palancas$minimo6  <- FALSE
+
+palancas$maximo3  <- FALSE  #maximo de los ultimos 3 meses
+palancas$maximo6  <- FALSE
+
+palancas$ratiomax3   <- FALSE   #La idea de Daiana Sparta
+palancas$ratiomean6  <- FALSE   #Un derivado de la idea de Daiana Sparta
+
+palancas$tendencia6  <- FALSE    #Great power comes with great responsability
 
 
-palancas$tendenciaYmuchomas  <- TRUE    #Great power comes with great responsability
-
-
-palancas$canaritosimportancia  <- TRUE  #si me quedo solo con lo mas importante de canaritosimportancia
+palancas$canaritosimportancia  <- FALSE  #si me quedo solo con lo mas importante de canaritosimportancia
 
 
 #escribo para saber cuales fueron los parametros
@@ -66,7 +77,6 @@ ReportarCampos  <- function( dataset )
 
 AgregarMes  <- function( dataset )
 {
-  gc()
   dataset[  , mes := foto_mes %% 100 ]
   ReportarCampos( dataset )
 }
@@ -75,7 +85,6 @@ AgregarMes  <- function( dataset )
 
 DriftEliminar  <- function( dataset, variables )
 {
-  gc()
   dataset[  , c(variables) := NULL ]
   ReportarCampos( dataset )
 }
@@ -84,7 +93,7 @@ DriftEliminar  <- function( dataset, variables )
 
 DummiesNA  <- function( dataset )
 {
-  gc()
+
   nulos  <- colSums( is.na(dataset[foto_mes==202101]) )  #cuento la cantidad de nulos por columna
   colsconNA  <- names( which(  nulos > 0 ) )
 
@@ -98,7 +107,6 @@ DummiesNA  <- function( dataset )
 
 Corregir  <- function( dataset )
 {
-  gc()
   #acomodo los errores del dataset
 
   dataset[ foto_mes==201801,  internet   := NA ]
@@ -210,7 +218,6 @@ Corregir  <- function( dataset )
 
 AgregarVariables  <- function( dataset )
 {
-  gc()
   #INICIO de la seccion donde se deben hacer cambios con variables nuevas
   #se crean los nuevos campos para MasterCard  y Visa, teniendo en cuenta los NA's
   #varias formas de combinar Visa_status y Master_status
@@ -272,114 +279,6 @@ AgregarVariables  <- function( dataset )
 
   #Aqui debe usted agregar sus propias nuevas variables
 
-  # Otras MS
-  dataset[ , mv_mconsumostotales     := mv_mconsumosdolares+mv_mconsumospesos  ] #MS
-  
-  dataset[ , mv_delinquency := rowSums( cbind( Master_delinquency,  Visa_delinquency) , na.rm=TRUE ) ] #MS
-  dataset[, suma_cons_limi := sum(c(mv_mconsumostotales, mv_mlimitecompra, mv_mpagado))] # MS
-  
-  dataset[, mv_tarjeta_consumo := sum(c(mtarjeta_visa_consumo  ,mtarjeta_master_consumo), na.rm = T) ]
-  dataset[, mv_saldo_consumo := sum(c(mv_msaldototal , mv_tarjeta_consumo), na.rm = T) ]
-  dataset[, consumo_prestamos := sum(c(mv_tarjeta_consumo , mprestamos_prendarios), na.rm = T) ]
-  
-  dataset[, m_cons_tar_limite := Master_mconsumospesos / Master_mlimitecompra ]
-  dataset[, v_cons_tar_limite := Visa_mconsumospesos / Visa_mlimitecompra ]
-  # dataset[, mv_cons_tar_limite := mv_mconsumospesos / mv_mlimitecompra ]
-  dataset[, mv_cons_tar_limite_2 :=sum(c(Master_mconsumospesos ,Visa_mconsumospesos), na.rm = T) 
-          /   sum(c( Master_mlimitecompra, Visa_mlimitecompra), na.rm = T) ]
-  dataset[, limite_descubierto := sum(c(mv_mlimitecompra,mdescubierto_preacordado), na.rm = T)]
-  dataset[, mv_saldo_tar_limite :=sum(c(Master_msaldototal ,Visa_msaldototal), na.rm = T)/
-            sum( c(Master_mlimitecompra, Visa_mlimitecompra), na.rm = T) ]
-  
-  dataset[, m_saldo_usd_pes := Master_msaldodolares / Master_msaldopesos ]
-  dataset[, v_saldo_usd_pes := Visa_msaldodolares / Visa_msaldopesos ]
-  dataset[, mv_saldo_usd_pes := sum(c(m_saldo_usd_pes , v_saldo_usd_pes), na.rm = T) ]
-  dataset[, mv_saldo_usd_pes_2 := sum(c(Master_msaldodolares , Visa_msaldodolares), na.rm = T)/
-            sum(c(Visa_msaldopesos,Visa_msaldodolares), na.rm = T) ]
-  
-  dataset[, payroll_cons_tot := cpayroll_trx / Master_mconsumototal ]
-  dataset[, saldo_antiguedad := mcuentas_saldo / cliente_antiguedad ]
-  dataset[, saldo_antiguedad := Visa_msaldototal / cliente_antiguedad ]
-  dataset[, edad_nro_cliente := cliente_edad / numero_de_cliente ]
-  
-  dataset[, rentabilidad_anual := mrentabilidad / mrentabilidad_annual ]
-  dataset[, rentabilidad_total := sum(c(mcomisiones , mrentabilidad_annual ,mrentabilidad,mpasivos_margen), na.rm = T)]
-  dataset[, rentabilidad_total_2 := sum(c(mcomisiones , mrentabilidad_annual,mpasivos_margen), na.rm = T)]
-  dataset[, rentabilidad_total_3 := sum(c(mcuentas_saldo , rentabilidad_total_2), na.rm = T)]
-  dataset[, rentabilidad_total_4 :=  rentabilidad_total_2/mcuentas_saldo]
-  dataset[, rentabilidad_total_productos := rentabilidad_total/cproductos]
-  
-  
-  dataset[, cuentas_totales := sum(c(tcuentas,ccuenta_corriente, ccaja_ahorro), na.rm = T)]
-  # dataset[, tpaquete := sum(c(tpaquete1,tpaquete3, tpaquete4), na.rm = T)]
-  dataset[, cta_corr_ca := sum(c(mcuenta_corriente,mcaja_ahorro), na.rm = T)]
-  dataset[, cta_corr_ca_ad := sum(c(mcaja_ahorro_adicional,mcuenta_corriente_adicional), na.rm = T)]
-  dataset[, cta_corr_ca_tot := sum(c(cta_corr_ca_ad,cta_corr_ca), na.rm = T)]
-  dataset[, cta_corr_ca_tot_2 := sum(c(cta_corr_ca_tot,mcaja_ahorro_dolares), na.rm = T)]
-  
-  dataset[, mplazo_fijo := sum(c(mplazo_fijo_dolares, mplazo_fijo_pesos), na.rm = T)]
-  dataset[, mplazo_fijo_cant := mplazo_fijo/ cplazo_fijo]
-  
-  dataset[ ,saldo_limite          := mcuentas_saldo  / mv_mlimitecompra ]
-  dataset[ ,saldo_limite_2          := sum(c(mcuentas_saldo  , mv_mlimitecompra), na.rm = T) ]
-  
-  dataset[ , transacciones_limite          :=  mv_mlimitecompra/ctarjeta_debito_transacciones ]
-  dataset[ , monto_transacciones          :=  mautoservicio/ctarjeta_debito_transacciones ]
-  dataset[, vm_transacciones := sum(c(ctarjeta_visa_transacciones,ctarjeta_master_transacciones), na.rm = T)]
-  dataset[, mv_consumo_trans := mv_tarjeta_consumo /vm_transacciones ]
-  dataset[ ,transacciones_limite_2          :=sum(c( ctarjeta_debito_transacciones  , mv_mlimitecompra), na.rm = T) ]
-  dataset[ ,cantidad_tarjetas          := sum(c(ctarjeta_debito  , ctarjeta_visa ,ctarjeta_master), na.rm = T) ]
-  dataset[ ,monto_debito_tarjetas          := mautoservicio/ sum(c(ctarjeta_debito  , ctarjeta_visa), na.rm = T) ]
-  dataset[, vm_transacciones_2 := vm_transacciones *cantidad_tarjetas ]
-  # dataset[, payroll_total := mpayroll  * mpayroll2 ]
-  dataset[, costo_salida := sum(c(cprestamos_personales , cprestamos_hipotecarios , cprestamos_prendarios, 
-                                  cantidad_tarjetas,cuentas_totales,cplazo_fijo ,
-                                  cinversion1, cproductos,cliente_vip ,cpayroll_trx,cpayroll2_trx,ctarjeta_visa_debitos_automaticos
-                                  ,ctarjeta_master_debitos_automaticos ,ccuenta_debitos_automaticos, ccaja_seguridad ,
-                                  ccomisiones_mantenimiento, ccomisiones_otras, tcallcenter,thomebanking), na.rm = T)]
-  
-  dataset[, seguros :=sum(c(cseguro_vida , cseguro_auto ,cseguro_vivienda , cseguro_accidentes_personales), na.rm = T) ]
-  dataset[, descuentos :=sum(c(ctarjeta_visa_descuentos, ctarjeta_master_descuentos), na.rm = T) ]
-  dataset[, comisiones :=sum(c( mcomisiones_mantenimiento, mcomisiones_otras), na.rm = T) ]
-  
-  dataset[, inversiones := sum(c(minversion1_pesos , minversion1_dolares, minversion2), na.rm = T)]
-  dataset[, debitos_automaticos := sum(c(mcuenta_debitos_automaticos , mttarjeta_visa_debitos_automaticos, 
-                                         mttarjeta_master_debitos_automaticos), na.rm = T)]
-  dataset[, costo_salida_2 := sum(c(mprestamos_personales , mprestamos_prendarios , mprestamos_hipotecarios ,
-                                    mdescubierto_preacordado), na.rm = T) ]
-  # dataset[, costo_salida_3 := sum(c(costo_salida_2, payroll_total), na.rm = T) ]
-  dataset[, costo_salida_4 := sum(c(costo_salida_2, inversiones ,mplazo_fijo, debitos_automaticos ), na.rm = T)]
-  dataset[, costo_salida_5 := sum(c(costo_salida_4, mv_tarjeta_consumo ), na.rm = T)]
-  dataset[, m_servicios := sum(c(mpagodeservicios, mpagomiscuentas ), na.rm = T)]
-  dataset[, c_servicios := sum(c(cpagodeservicios, cpagomiscuentas ), na.rm = T)]
-  dataset[, c_forex := sum(c(cforex_buy, cforex_sell ), na.rm = T)]
-  dataset[, m_forex := sum(c(mforex_buy, mforex_sell ), na.rm = T)]
-  dataset[, c_transferencias := sum(c(ctransferencias_recibidas, ctransferencias_emitidas ), na.rm = T)]
-  dataset[, m_transferencias := sum(c(mtransferencias_recibidas, mtransferencias_emitidas ), na.rm = T)]
-  dataset[, extracciones := cextraccion_autoservicio *mextraccion_autoservicio]
-  dataset[, c_cheques := sum(c(ccheques_depositados, ccheques_emitidos)) ]
-  dataset[, m_cheques := sum(c(mcheques_depositados, mcheques_emitidos)) ]
-  dataset[, c_cheques_rech := sum(c(ccheques_depositados_rechazados, ccheques_emitidos_rechazados), na.rm = T) ]
-  dataset[, m_cheques_rech := sum(c(mcheques_depositados_rechazados, mcheques_emitidos_rechazados), na.rm = T) ]
-  dataset[, trans_call_caja := sum(c(chomebanking_transacciones,chomebanking_transacciones ), na.rm = T) ]
-  dataset[, ccajas := sum(c(ccajas_transacciones,ccajas_consultas, ccajas_depositos, ccajas_extracciones,
-                            ccajas_otras,catm_trx), na.rm = T) ] 
-  dataset[, catm := sum(c(catm_trx, catm_trx_other), na.rm = T) ]
-  
-  
-  dataset[, financiacion_limit_compra := mv_mfinanciacion_limite + mv_mlimitecompra ]
-  dataset[, transferencias_x := mtransferencias_recibidas* ctransferencias_recibidas]
-  dataset[, transferencias_x_2 := c_transferencias* m_transferencias]
-  dataset[, prestamos_saldo := mprestamos_personales/mcuentas_saldo]
-  dataset[, ctrx_x_saldo := ctrx_quarter *mcuentas_saldo]
-  dataset[, ctrx_x_ca := ctrx_quarter *mcaja_ahorro]
-  dataset[, ctrx_x_edad := ctrx_quarter *cliente_edad]
-  dataset[, ctrx_x_antiguedad := ctrx_quarter *cliente_antiguedad]
-  dataset[, rentabilidad_x_antiguedad := mrentabilidad_annual *cliente_antiguedad]
-  dataset[, ctrx_x_payroll := ctrx_quarter *cpayroll_trx]
-  dataset[, ctrx_x_saldo := ctrx_quarter *cpayroll_trx]
-  dataset[, trans_x_edad := ctarjeta_visa_transacciones * cliente_edad]
-  
   #valvula de seguridad para evitar valores infinitos
   #paso los infinitos a NULOS
   infinitos      <- lapply(names(dataset),function(.name) dataset[ , sum(is.infinite(get(.name)))])
@@ -387,7 +286,7 @@ AgregarVariables  <- function( dataset )
   if( infinitos_qty > 0 )
   {
     cat( "ATENCION, hay", infinitos_qty, "valores infinitos en tu dataset. Seran pasados a NA\n" )
-    dataset[mapply(is.infinite, dataset)] <<- NA
+    dataset[mapply(is.infinite, dataset)] <- NA
   }
 
 
@@ -400,7 +299,7 @@ AgregarVariables  <- function( dataset )
   {
     cat( "ATENCION, hay", nans_qty, "valores NaN 0/0 en tu dataset. Seran pasados arbitrariamente a 0\n" )
     cat( "Si no te gusta la decision, modifica a gusto el programa!\n\n")
-    dataset[mapply(is.nan, dataset)] <<- 0
+    dataset[mapply(is.nan, dataset)] <- 0
   }
 
   ReportarCampos( dataset )
@@ -409,9 +308,9 @@ AgregarVariables  <- function( dataset )
 #esta funcion supone que dataset esta ordenado por   <numero_de_cliente, foto_mes>
 #calcula el lag y el delta lag
 
-Lags  <- function( cols, nlag, deltas )
+Lags  <- function( dataset, cols, nlag, deltas )
 {
-  gc()
+
   sufijo  <- paste0( "_lag", nlag )
 
   dataset[ , paste0( cols, sufijo) := shift(.SD, nlag, NA, "lag"), 
@@ -432,26 +331,95 @@ Lags  <- function( cols, nlag, deltas )
   ReportarCampos( dataset )
 }
 #------------------------------------------------------------------------------
+#calcula el promedio de los ultimos  nhistoria meses
+
+Promedios  <- function( dataset, cols, nhistoria )
+{
+
+  sufijo  <- paste0( "_avg", nhistoria )
+  
+  dataset[ , paste0( cols, sufijo) := frollmean(x=.SD, n=nhistoria, na.rm=TRUE, algo="fast", align="right"), 
+             by= numero_de_cliente, 
+             .SDcols= cols]
+
+  ReportarCampos( dataset )
+}
+#------------------------------------------------------------------------------
+#calcula el minimo de los ultimos  nhistoria meses
+
+Minimos  <- function( dataset, cols, nhistoria )
+{
+
+  sufijo  <- paste0( "_min", nhistoria )
+
+  dataset[ , paste0( cols, sufijo) := frollapply(x=.SD, FUN="min", n=nhistoria, align="right"), 
+             by= numero_de_cliente, 
+             .SDcols= cols]
+
+  ReportarCampos( dataset )
+}
+#------------------------------------------------------------------------------
+#calcula el maximo de los ultimos  nhistoria meses
+
+Maximos  <- function( dataset, cols, nhistoria )
+{
+
+  sufijo  <- paste0( "_max", nhistoria )
+
+  dataset[ , paste0( cols, sufijo) := frollapply(x=.SD, FUN="max", n=nhistoria, na.rm=TRUE, align="right"), 
+             by= numero_de_cliente, 
+             .SDcols= cols]
+
+  ReportarCampos( dataset )
+}
+#------------------------------------------------------------------------------
+#calcula  el ratio entre el valor actual y el maximo de los ultimos nhistoria meses
+
+RatioMax  <- function( dataset, cols, nhistoria )
+{
+  sufijo  <- paste0( "_rmax", nhistoria )
+
+  dataset[ , paste0( cols, sufijo) := .SD/ frollapply(x=.SD, FUN="max", n=nhistoria, na.rm=TRUE, align="right"), 
+             by= numero_de_cliente, 
+             .SDcols= cols]
+
+  ReportarCampos( dataset )
+}
+#------------------------------------------------------------------------------
+#calcula  el ratio entre el valor actual y el promedio de los ultimos nhistoria meses
+
+RatioMean  <- function( dataset, cols, nhistoria )
+{
+  sufijo  <- paste0( "_rmean", nhistoria )
+
+  dataset[ , paste0( cols, sufijo) := .SD/frollapply(x=.SD, FUN="mean", n=nhistoria, na.rm=TRUE, align="right"), 
+             by= numero_de_cliente, 
+             .SDcols= cols]
+
+  ReportarCampos( dataset )
+}
+#------------------------------------------------------------------------------
+
 #se calculan para los 6 meses previos el minimo, maximo y tendencia calculada con cuadrados minimos
-#la formula de calculo de la tendencia puede verse en https://stats.libretexts.org/Bookshelves/Introductory_Statistics/Book%3A_Introductory_Statistics_(Shafer_and_Zhang)/10%3A_Correlation_and_Regression/10.04%3A_The_Least_Squares_Regression_Line
+#la formual de calculo de la tendencia puede verse en https://stats.libretexts.org/Bookshelves/Introductory_Statistics/Book%3A_Introductory_Statistics_(Shafer_and_Zhang)/10%3A_Correlation_and_Regression/10.04%3A_The_Least_Squares_Regression_Line
 #para la maxíma velocidad esta funcion esta escrita en lenguaje C, y no en la porqueria de R o Python
 
-cppFunction('NumericVector fhistC(NumericVector pcolumna, IntegerVector pdesde ) 
+Rcpp::cppFunction('NumericVector fhistC(NumericVector pcolumna, IntegerVector pdesde ) 
 {
+  // [[Rcpp::plugins(openmp)]]
   /* Aqui se cargan los valores para la regresion */
   double  x[100] ;
   double  y[100] ;
 
   int n = pcolumna.size();
-  NumericVector out( 5*n );
+  NumericVector out( n );
 
+
+  //#if defined(_OPENMP)
+  //#pragma omp parallel for
+  //#endif
   for(int i = 0; i < n; i++)
   {
-    //lag
-    if( pdesde[i]-1 < i )  out[ i + 4*n ]  =  pcolumna[i-1] ;
-    else                   out[ i + 4*n ]  =  NA_REAL ;
-
-
     int  libre    = 0 ;
     int  xvalor   = 1 ;
 
@@ -491,16 +459,10 @@ cppFunction('NumericVector fhistC(NumericVector pcolumna, IntegerVector pdesde )
       }
 
       out[ i ]  =  (libre*xysum - xsum*ysum)/(libre*xxsum -xsum*xsum) ;
-      out[ i + n ]    =  vmin ;
-      out[ i + 2*n ]  =  vmax ;
-      out[ i + 3*n ]  =  ysum / libre ;
     }
     else
     {
-      out[ i       ]  =  NA_REAL ; 
-      out[ i + n   ]  =  NA_REAL ;
-      out[ i + 2*n ]  =  NA_REAL ;
-      out[ i + 3*n ]  =  NA_REAL ;
+      out[ i ]  =  NA_REAL ; 
     }
   }
 
@@ -511,12 +473,10 @@ cppFunction('NumericVector fhistC(NumericVector pcolumna, IntegerVector pdesde )
 #calcula la tendencia de las variables cols de los ultimos 6 meses
 #la tendencia es la pendiente de la recta que ajusta por cuadrados minimos
 
-TendenciaYmuchomas  <- function( dataset, cols, ventana=6, tendencia=TRUE, minimo=TRUE, maximo=TRUE, promedio=TRUE, 
-                                 ratioavg=FALSE, ratiomax=FALSE)
+Tendencia  <- function( dataset, cols )
 {
-  gc()
   #Esta es la cantidad de meses que utilizo para la historia
-  ventana_regresion  <- ventana
+  ventana_regresion  <- 6
 
   last  <- nrow( dataset )
 
@@ -534,12 +494,7 @@ TendenciaYmuchomas  <- function( dataset, cols, ventana=6, tendencia=TRUE, minim
   {
     nueva_col     <- fhistC( dataset[ , get(campo) ], vector_desde ) 
 
-    if(tendencia)  dataset[ , paste0( campo, "_tend", ventana) := nueva_col[ (0*last +1):(1*last) ]  ]
-    if(minimo)     dataset[ , paste0( campo, "_min", ventana)  := nueva_col[ (1*last +1):(2*last) ]  ]
-    if(maximo)     dataset[ , paste0( campo, "_max", ventana)  := nueva_col[ (2*last +1):(3*last) ]  ]
-    if(promedio)   dataset[ , paste0( campo, "_avg", ventana)  := nueva_col[ (3*last +1):(4*last) ]  ]
-    if(ratioavg)   dataset[ , paste0( campo, "_ratioavg", ventana)  := get(campo) /nueva_col[ (3*last +1):(4*last) ]  ]
-    if(ratiomax)   dataset[ , paste0( campo, "_ratiomax", ventana)  := get(campo) /nueva_col[ (2*last +1):(3*last) ]  ]
+    dataset[ , paste0( campo, "_tend") := nueva_col[ (0*last +1):(1*last) ]  ]
   }
 
 }
@@ -571,30 +526,26 @@ fganancia_lgbm_meseta  <- function(probs, datos)
 #------------------------------------------------------------------------------
 #Elimina del dataset las variables que estan por debajo de la capa geologica de canaritos
 
-CanaritosImportancia  <- function( canaritos_ratio=0.2 )
+CanaritosImportancia  <- function( dataset )
 {
+
   gc()
-  ReportarCampos( dataset )
   dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
 
-  for( i  in 1:(ncol(dataset)*canaritos_ratio))  dataset[ , paste0("canarito", i ) :=  runif( nrow(dataset))]
+  for( i  in 1:(ncol(dataset)/5))  dataset[ , paste0("canarito", i ) :=  runif( nrow(dataset))]
 
   campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01" ) )
 
   azar  <- runif( nrow(dataset) )
-  dataset[ , entrenamiento := foto_mes>= 202001 &  foto_mes<= 202010 &  foto_mes!=202006 & ( clase01==1 | azar < 0.10 ) ]
+  entrenamiento  <-  dataset[ , foto_mes>= 202001 &  foto_mes<= 202010 &  foto_mes!=202006 & ( clase01==1 | azar < 0.10 ) ]
 
   dtrain  <- lgb.Dataset( data=    data.matrix(  dataset[ entrenamiento==TRUE, campos_buenos, with=FALSE]),
                           label=   dataset[ entrenamiento==TRUE, clase01],
-                          weight=  dataset[ entrenamiento==TRUE, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)],
-                          free_raw_data= FALSE
-                        )
+                          weight=  dataset[ entrenamiento==TRUE, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)] )
 
   dvalid  <- lgb.Dataset( data=    data.matrix(  dataset[ foto_mes==202011, campos_buenos, with=FALSE]),
                           label=   dataset[ foto_mes==202011, clase01],
-                          weight=  dataset[ foto_mes==202011, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)],
-                          free_raw_data= FALSE
-                          )
+                          weight=  dataset[ foto_mes==202011, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)] )
 
 
   param <- list( objective= "binary",
@@ -611,11 +562,10 @@ CanaritosImportancia  <- function( canaritos_ratio=0.2 )
                  max_bin= 31,            #por ahora, lo dejo fijo
                  num_iterations= 9999,   #un numero muy grande, lo limita early_stopping_rounds
                  force_row_wise= TRUE,    #para que los alumnos no se atemoricen con tantos warning
-                 learning_rate= 0.065, 
-                 feature_fraction= 1.0,   #lo seteo en 1 para que las primeras variables del dataset no se vean opacadas
-                 min_data_in_leaf= 260,
-                 num_leaves= 60,
-               # num_threads= 8,
+                 learning_rate= 0.02, 
+                 feature_fraction= 0.50,
+                 min_data_in_leaf= 4000,
+                 num_leaves= 600,
                  early_stopping_rounds= 200 )
 
   modelo  <- lgb.train( data= dtrain,
@@ -626,104 +576,89 @@ CanaritosImportancia  <- function( canaritos_ratio=0.2 )
 
   tb_importancia  <- lgb.importance( model= modelo )
   tb_importancia[  , pos := .I ]
+  
+  fwrite( tb_importancia, file="./work/impo.txt",  , sep="\t" )
+  
+  umbral  <- tb_importancia[ Feature %like% "canarito", median(pos) - sd(pos) ]
+  col_inutiles  <- tb_importancia[ pos >= umbral | Feature %like% "canarito",  Feature ]
 
-  fwrite( tb_importancia, file="./work/impo.txt",   sep="\t" )
+  for( col in col_inutiles )
+  {
+    dataset[  ,  paste0(col) := NULL ]
+  }
 
-  umbral  <- tb_importancia[ Feature %like% "canarito", median(pos) + sd(pos) ]  #Atencion corto en la mediana !!
-
-  col_utiles  <- tb_importancia[ pos < umbral & !( Feature %like% "canarito"),  Feature ]
-  col_utiles  <-  unique( c( col_utiles,  c("numero_de_cliente","foto_mes","clase_ternaria","mes") ) )
-  col_inutiles  <- setdiff( colnames(dataset), col_utiles )
-
-  dataset[  ,  (col_inutiles) := NULL ]
+  rm( dtrain, dvalid )
+  gc()
 
   ReportarCampos( dataset )
 }
 #------------------------------------------------------------------------------
 
+correr_todo  <- function( palancas )
+{
+  #cargo el dataset ORIGINAL
+  dataset  <- fread( "./datasetsOri/paquete_premium.csv.gz")
+
+  setorder(  dataset, numero_de_cliente, foto_mes )  #ordeno el dataset
+
+  AgregarMes( dataset )  #agrego el mes del año
+
+  if( length(palancas$variablesdrift) > 0 )   DriftEliminar( dataset, palancas$variablesdrift )
+
+  if( palancas$dummiesNA )  DummiesNA( dataset )  #esta linea debe ir ANTES de Corregir  !!
+
+  if( palancas$corregir )  Corregir( dataset )  #esta linea debe ir DESPUES de  DummiesNA
+
+  if( palancas$nuevasvars )  AgregarVariables( dataset )
+
+  cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )
+
+  if( palancas$lag1 )   Lags( dataset, cols_analiticas, 1, palancas$delta1 )
+  if( palancas$lag2 )   Lags( dataset, cols_analiticas, 2, palancas$delta2 )
+  if( palancas$lag3 )   Lags( dataset, cols_analiticas, 3, palancas$delta3 )
+  if( palancas$lag4 )   Lags( dataset, cols_analiticas, 4, palancas$delta4 )
+  if( palancas$lag5 )   Lags( dataset, cols_analiticas, 5, palancas$delta5 )
+  if( palancas$lag6 )   Lags( dataset, cols_analiticas, 6, palancas$delta6 )
+
+  if( palancas$promedio3 )  Promedios( dataset, cols_analiticas, 3 )
+  if( palancas$promedio6 )  Promedios( dataset, cols_analiticas, 6 )
+
+  if( palancas$minimo3 )  Minimos( dataset, cols_analiticas, 3 )
+  if( palancas$minimo6 )  Minimos( dataset, cols_analiticas, 6 )
+
+  if( palancas$maximo3 )  Maximos( dataset, cols_analiticas, 3 )
+  if( palancas$maximo6 )  Maximos( dataset, cols_analiticas, 6 )
+
+  if(palancas$ratiomax3)  RatioMax(  dataset, cols_analiticas, 3) #La idea de Daiana Sparta
+  if(palancas$ratiomean6) RatioMean( dataset, cols_analiticas, 6) #Derivado de la idea de Daiana Sparta
+
+
+  if( palancas$tendencia6 )  Tendencia( dataset, cols_analiticas)
+
+
+  if( palancas$canaritosimportancia )  CanaritosImportancia( dataset )
+
+
+
+  #dejo la clase como ultimo campo
+  nuevo_orden  <- c( setdiff( colnames( dataset ) , "clase_ternaria" ) , "clase_ternaria" )
+  setcolorder( dataset, nuevo_orden )
+
+  #Grabo el dataset
+  fwrite( dataset,
+          paste0( "./datasets/dataset_epic_", palancas$version, ".csv.gz" ),
+          logical01 = TRUE,
+          sep= "," )
+
+}
+#------------------------------------------------------------------------------
+
 #Aqui empieza el programa
 
-#cargo el dataset ORIGINAL
-dataset  <- fread( "./datasetsOri/paquete_premium.csv.gz")
-gc()
+
+correr_todo( palancas )
 
 
-setorder(  dataset, numero_de_cliente, foto_mes )  #ordeno el dataset
-
-AgregarMes( dataset )  #agrego el mes del año
-
-if( palancas$dummiesNA )  DummiesNA( dataset )  #esta linea debe ir ANTES de Corregir  !!
-
-if( palancas$corregir )  Corregir( dataset )  #esta linea debe ir DESPUES de  DummiesNA
-
-if( palancas$nuevasvars )  AgregarVariables( dataset )
-
-
-#--------------------------------------
-#Esta primera parte es muuuy  artesanal  y discutible  ya que hay multiples formas de hacerlo
-
-cols_analiticas  <- copy( setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") ) )
-if( palancas$tendenciaYmuchomas )  TendenciaYmuchomas( dataset, cols_analiticas)
-
-if( palancas$lag1 )   Lags(  cols_analiticas, 1, palancas$delta1 )
-
-#hay una cantidad muy grande de variables, no soporto la presion
-CanaritosImportancia( canaritos_ratio= 0.3 )
-# at ease !  https://www.youtube.com/watch?v=QhCISxbO7rg
-#--------------------------------------
-
-
-
-#Agrego lags de orden 2
-cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )  
-if( palancas$lag2 )   Lags( cols_analiticas, 2, palancas$delta2 )
-CanaritosImportancia( canaritos_ratio= 0.1 )
-
-#Agrego lags de orden 3
-cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )
-if( palancas$lag3 )   Lags( cols_analiticas, 3, palancas$delta3 )
-CanaritosImportancia( 0.3 )      # vuelvo a hacer lugar gracias a los canaritos
-
-#Agrego lags de orden 4
-cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )
-if( palancas$lag4 )   Lags(  cols_analiticas, 4, palancas$delta4 )
-CanaritosImportancia( 0.3 )
-
-#Agrego lags de orden 5
-cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )
-if( palancas$lag5 )   Lags( cols_analiticas, 5, palancas$delta5 )
-CanaritosImportancia( 0.3 )
-
-#Agrego lags de orden 6
-cols_analiticas  <- setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") )
-if( palancas$lag6 )   Lags( cols_analiticas, 6, palancas$delta6 )
-CanaritosImportancia( 0.3 )
-
-
-#Ahora construyo patrones elaborados  https://www.youtube.com/watch?v=aLj8WCO-2QI
-
-cols_analiticas  <- copy( setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") ) )
-if( palancas$tendenciaYmuchomas )  TendenciaYmuchomas( dataset, cols_analiticas, minimo=FALSE, maximo=FALSE)
-CanaritosImportancia( canaritos_ratio=0.1 )
-
-cols_analiticas  <- copy( setdiff( colnames(dataset),  c("numero_de_cliente","foto_mes","mes","clase_ternaria") ) )
-if( palancas$tendenciaYmuchomas )  TendenciaYmuchomas( dataset, cols_analiticas, ventana=3, tendencia=FALSE, minimo=FALSE, maximo=FALSE)
-CanaritosImportancia( canaritos_ratio=0.1 )
-
-
-#dejo la clase como ultimo campo
-nuevo_orden  <- c( setdiff( colnames( dataset ) , "clase_ternaria" ) , "clase_ternaria" )
-setcolorder( dataset, nuevo_orden )
-
-
-#Grabo el dataset    https://www.youtube.com/watch?v=66CP-pq7Cx0
-fwrite( dataset,
-        paste0( "./datasets/canaproxy_", palancas$version, ".csv.gz" ),
-        logical01 = TRUE,
-        sep= "," )
-
-
-
-#quit( save="no" )
+quit( save="no" )
 
 
