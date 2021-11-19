@@ -22,7 +22,7 @@ setwd( directory.root )
 
 palancas  <- list()  #variable con las palancas para activar/desactivar
 
-palancas$version  <- "v1114"   #Muy importante, ir cambiando la version
+palancas$version  <- "vFExFI"   #Muy importante, ir cambiando la version
 
 palancas$variablesdrift  <- c()   #aqui van las columnas que se quieren eliminar
 
@@ -103,7 +103,7 @@ DummiesNA  <- function( dataset )
   ReportarCampos( dataset )
 }
 #------------------------------------------------------------------------------
-#Corrige poniendo a NA las variables que en ese mes estan dañadas
+#Corrige poniendo a NA las variables que en ese mes estan da?adas
 
 Corregir  <- function( dataset )
 {
@@ -376,7 +376,7 @@ RatioMean  <- function( dataset, cols, nhistoria )
 
 #se calculan para los 6 meses previos el minimo, maximo y tendencia calculada con cuadrados minimos
 #la formual de calculo de la tendencia puede verse en https://stats.libretexts.org/Bookshelves/Introductory_Statistics/Book%3A_Introductory_Statistics_(Shafer_and_Zhang)/10%3A_Correlation_and_Regression/10.04%3A_The_Least_Squares_Regression_Line
-#para la maxíma velocidad esta funcion esta escrita en lenguaje C, y no en la porqueria de R o Python
+#para la max?ma velocidad esta funcion esta escrita en lenguaje C, y no en la porqueria de R o Python
 
 Rcpp::cppFunction('NumericVector fhistC(NumericVector pcolumna, IntegerVector pdesde ) 
 {
@@ -477,7 +477,7 @@ fganancia_lgbm_meseta  <- function(probs, datos)
   tbl[ , gan_acum :=  cumsum( gan ) ]
   setorder( tbl, -gan_acum )   #voy por la meseta
   
-  gan  <- mean( tbl[ 1:500,  gan_acum] )  #meseta de tamaño 500
+  gan  <- mean( tbl[ 1:500,  gan_acum] )  #meseta de tama?o 500
   
   pos_meseta  <- tbl[ 1:500,  median(posicion)]
   VPOS_CORTE  <<- c( VPOS_CORTE, pos_meseta )
@@ -564,7 +564,7 @@ correr_todo  <- function( palancas )
   
   setorder(  dataset, numero_de_cliente, foto_mes )  #ordeno el dataset
   
-  AgregarMes( dataset )  #agrego el mes del año
+  AgregarMes( dataset )  #agrego el mes del a?o
   
   if( length(palancas$variablesdrift) > 0 )   DriftEliminar( dataset, palancas$variablesdrift )
   
