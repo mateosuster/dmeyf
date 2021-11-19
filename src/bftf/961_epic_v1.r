@@ -58,7 +58,7 @@ ktrain_mes_hasta    <- 202010  #Obviamente, solo puedo entrenar hasta 202011
 ktrain_mes_desde    <- 201901
 ktrain_meses_malos  <- c( 202006 )  #meses que quiero excluir del entrenamiento
 
-
+# puede contener los datos del test? sí.
 kgen_mes_hasta    <- 202011   #La generacion final para Kaggle, sin undersampling
 kgen_mes_desde    <- 201901
 
