@@ -239,7 +239,8 @@ AgregarVariables  <- function( dataset )
     "mdescubierto_preacordado",
     "mcuenta_corriente",
     "mrentabilidad",
-    "mrentabilidad_annual")
+    "mrentabilidad_annual",
+    "mv_msaldototal")
   
   for (i in 1:length(features_to_transform)) { 
     col = features_to_transform[i]
