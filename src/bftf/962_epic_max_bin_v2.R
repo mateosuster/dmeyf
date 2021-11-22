@@ -43,7 +43,7 @@ setwd( directory.root )
 
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
-kscript         <- "962_epic_maxbin2"
+kscript         <- "962_epic_maxbi_menos_meses"
 
 karch_dataset    <- "./datasets/dataset_epic_v_rankeo.csv.gz"
 
@@ -55,12 +55,12 @@ ktest_mes_desde  <- 202011
 ktrain_subsampling  <- 0.15   #el undersampling que voy a hacer de los continua
 
 ktrain_mes_hasta    <- 202010  #Obviamente, solo puedo entrenar hasta 202011
-ktrain_mes_desde    <- 201906
+ktrain_mes_desde    <- 202006
 ktrain_meses_malos  <- c( 202006 )  #meses que quiero excluir del entrenamiento
 
 
 kgen_mes_hasta    <- 202011   #La generacion final para Kaggle, sin undersampling
-kgen_mes_desde    <- 202006
+kgen_mes_desde    <- 202001
 
 
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
