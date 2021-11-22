@@ -619,7 +619,7 @@ Rango <- function( dataset, cols )
   dataset[ , paste0( cols, "_rango") := lapply( .SD, frankv, na.last="keep", ties.method="dense" ),
            by= foto_mes,
            .SDcols= cols]
-  dataset_copy[, paste0( cols, "_nrango") := lapply(.SD, function(x){(x - min(x)) / (max(x) - min(x))}),
+  dataset[, paste0( cols, "_nrango") := lapply(.SD, function(x){(x - min(x)) / (max(x) - min(x))}),
                .SDcols = cols_rank]
   
   ReportarCampos( dataset )
