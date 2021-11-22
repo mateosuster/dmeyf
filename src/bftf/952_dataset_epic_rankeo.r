@@ -57,7 +57,7 @@ palancas$maximo6  <- FALSE
 palancas$ratiomax3   <- FALSE   #La idea de Daiana Sparta
 palancas$ratiomean6  <- FALSE   #Un derivado de la idea de Daiana Sparta
 
-palancas$tendencia6  <- TRUE    #Great power comes with great responsability
+palancas$tendencia6  <- FALSE    #Great power comes with great responsability
 
 
 palancas$canaritosimportancia  <- FALSE  #si me quedo solo con lo mas importante de canaritosimportancia
@@ -279,6 +279,22 @@ AgregarVariables  <- function( dataset )
   dataset[ , mvr_mpagosdolares       := mv_mpagosdolares / mv_mlimitecompra ]
   dataset[ , mvr_mconsumototal       := mv_mconsumototal  / mv_mlimitecompra ]
   dataset[ , mvr_mpagominimo         := mv_mpagominimo  / mv_mlimitecompra ]
+  
+  dataset[, ctrx_x_ca := ctrx_quarter *mcaja_ahorro]
+  dataset[, trans_x_edad := ctarjeta_visa_transacciones * cliente_edad]
+  dataset[, costo_salida := sum(c(cprestamos_personales , cprestamos_hipotecarios , cprestamos_prendarios, 
+                                  cantidad_tarjetas,cuentas_totales,cplazo_fijo ,
+                                  cinversion1, cproductos,cliente_vip ,cpayroll_trx,cpayroll2_trx,ctarjeta_visa_debitos_automaticos
+                                  ,ctarjeta_master_debitos_automaticos ,ccuenta_debitos_automaticos, ccaja_seguridad ,
+                                  ccomisiones_mantenimiento, ccomisiones_otras, tcallcenter,thomebanking), na.rm = T)]
+  dataset[, costo_salida_2 := sum(c(mprestamos_personales , mprestamos_prendarios , mprestamos_hipotecarios ,
+                                    mdescubierto_preacordado), na.rm = T) ]
+  dataset[ , multiplo_mcaja_ahorro_mdescubierto_preacordado := mcaja_ahorro * mdescubierto_preacordado ]
+  dataset[ , multiplo_mtarjeta_visa_consumo_cpayroll_trx := mtarjeta_visa_consumo * cpayroll_trx ]
+  dataset[ , multiplo_Visa_status_mdescubierto_preacordado := Visa_status * mdescubierto_preacordado ]
+  dataset[ , multiplo_mdescubierto_preacordado_mcaja_ahorro := mdescubierto_preacordado * mcaja_ahorro ]
+  dataset[ , multiplo_mcuentas_saldo_mprestamos_personales := mcuentas_saldo * mprestamos_personales ]
+  dataset[ , multiplo_mpayroll_Visa_mpagominimo := mpayroll * Visa_mpagominimo ]
 
   #Aqui debe usted agregar sus propias nuevas variables
 
