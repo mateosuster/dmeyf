@@ -28,7 +28,7 @@ dataset[, (campos_buenos):= lapply(.SD, scale), .SDcols=campos_buenos]
 # data = data[sample(nrow(data), 1000), ]
 
 
-pdf("../work/boxplot_sin_outliers_dataset1.pdf")
+pdf("./work/boxplot_sin_outliers_dataset1.pdf")
 for( campo in  campos_buenos ){
   
   print(ggplot(data= dataset, aes(x = foto_mes , y = get(campo), fill = as.factor(clase_ternaria),
@@ -41,7 +41,7 @@ for( campo in  campos_buenos ){
 }
 dev.off()
 
-pdf("../work/boxplots_dataset1.pdf")
+pdf("./work/boxplots_dataset1.pdf")
 for( campo in  campos_buenos ){
   
   print(ggplot(data= dataset, aes(x = foto_mes , y = get(campo), fill = as.factor(clase_ternaria),
@@ -80,7 +80,7 @@ dataset[, (campos_buenos):= lapply(.SD, scale), .SDcols=campos_buenos]
 # data = data[sample(nrow(data), 1000), ]
 
 
-pdf("../work/boxplot_sin_outliers_datasetFI.pdf")
+pdf("./work/boxplot_sin_outliers_datasetFI.pdf")
 for( campo in  campos_buenos ){
   
   print(ggplot(data= dataset, aes(x = foto_mes , y = get(campo), fill = as.factor(clase_ternaria),
@@ -93,7 +93,7 @@ for( campo in  campos_buenos ){
 }
 dev.off()
 
-pdf("../work/boxplots_datasetFI.pdf")
+pdf("./work/boxplots_datasetFI.pdf")
 for( campo in  campos_buenos ){
   
   print(ggplot(data= dataset, aes(x = foto_mes , y = get(campo), fill = as.factor(clase_ternaria),
