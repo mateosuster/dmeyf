@@ -1,5 +1,19 @@
 library(data.table)
 
+
+#para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
+#cambiar aqui las rutas en su maquina
+switch ( Sys.info()[['sysname']],
+         Windows = { directory.root  <-  "M:\\" },   #Windows
+         Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
+         Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
+)
+#defino la carpeta donde trabajo
+setwd( directory.root )
+
+
+
+
 # Funcion para generar csv de muestra al azar de las filas de el csv grande paquete_premium.csv
 #La funcion va leyendo el dataset de a pedazos y tomand una muestra de cada pedazo para finalmente unirlos y guardarlo
 
@@ -11,7 +25,7 @@ library(data.table)
 # csv.final: path a donde se va a guardar el csv sampleado
 # seed: seed
 
-genero.csv.azar <- function(n.final.filas, particiones = 5, filas.totales = 7489082, csv.original = "datasetsOri/paquete_premium.csv", csv.final = "datasetsOri/muestra_paquete_premium.csv", seed = 420){
+genero.csv.azar <- function(n.final.filas, particiones = 5, filas.totales = 7489082, csv.original = "./datasetsOri/paquete_premium.csv", csv.final = "./datasets/muestra_paquete_premium.csv", seed = 420){
   set.seed(seed)
   
   filas.por.dt <- floor(filas.totales/particiones)
@@ -38,3 +52,5 @@ genero.csv.azar <- function(n.final.filas, particiones = 5, filas.totales = 7489
   
   cat("\nArchivo creado en", csv.final, "con dimension", dim(dt.final), "\n")
 }
+
+genero.csv.azar(n.final.filas = 500000)
