@@ -63,7 +63,7 @@ kgen_mes_hasta    <- 202011   #La generacion final para Kaggle, sin undersamplin
 kgen_mes_desde    <- 202001
 
 
-kBO_iter    <-  50   #cantidad de iteraciones de la Optimizacion Bayesiana
+kBO_iter    <-  100   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 #Aqui se cargan los hiperparametros
 hs <- makeParamSet( 
