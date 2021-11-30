@@ -52,13 +52,13 @@ kapply_mes       <- c(202101)  #El mes donde debo aplicar el modelo
 
 ktrain_subsampling  <- 0.1   #el undersampling que voy a hacer de los continua
 
-ktrain_mes_hasta    <- 202009  #Obviamente, solo puedo entrenar hasta 202011
-ktrain_mes_desde    <- 202009
+ktrain_mes_hasta    <- 202001  #Obviamente, solo puedo entrenar hasta 202011
+ktrain_mes_desde    <- 202010
 
-ktrain_meses_malos  <- c()  #meses que quiero excluir del entrenamiento
+ktrain_meses_malos  <- c(202003, 202004, 202005, 202006)  #meses que quiero excluir del entrenamiento
 
-kgen_mes_hasta    <- 202009  #Obviamente, solo puedo entrenar hasta 202011
-kgen_mes_desde    <- 202009
+kgen_mes_hasta    <- 202011  #Obviamente, solo puedo entrenar hasta 202011
+kgen_mes_desde    <- 202001
 
 
 kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
@@ -67,8 +67,15 @@ kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
 hs <- makeParamSet( 
          makeNumericParam("learning_rate",    lower=    0.02 , upper=    0.1),
          makeNumericParam("feature_fraction", lower=    0.1  , upper=    1.0),
-         makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 8000L),
-         makeIntegerParam("num_leaves",       lower=    8L   , upper= 1024L)
+         makeIntegerParam("min_data_in_leaf", lower=  100L   , upper= 3000L),
+         makeIntegerParam("num_leaves",       lower=    8L   , upper= 800L),
+
+         makeIntegerParam("lambda_l1",       lower=    0   , upper= 100),
+         makeIntegerParam("lambda_l2",       lower=    0   , upper= 200),
+         makeIntegerParam("min_gain_to_split",       lower=    0   , upper= 30),
+         
+         makeNumericParam("bagging_fraction", lower=       0.1  , upper=    1.0),
+         makeNumericParam("path_smooth", lower=      0.25  , upper=    0.75)
         )
 
 campos_malos  <- c()   #aqui se deben cargar todos los campos culpables del Data Drifting
@@ -296,10 +303,10 @@ EstimarGanancia_lightgbm  <- function( x )
                           verbosity= -100,
                           seed= 999983,
                           max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
-                          min_gain_to_split= 0.0, #por ahora, lo dejo fijo
-                          lambda_l1= 0.0,         #por ahora, lo dejo fijo
-                          lambda_l2= 0.0,         #por ahora, lo dejo fijo
-                          max_bin= 31,            #por ahora, lo dejo fijo
+                          # min_gain_to_split= 0.0, #por ahora, lo dejo fijo
+                          # lambda_l1= 0.0,         #por ahora, lo dejo fijo
+                          # lambda_l2= 0.0,         #por ahora, lo dejo fijo
+                          max_bin= 255,            #por ahora, lo dejo fijo
                           num_iterations= 9999,   #un numero muy grande, lo limita early_stopping_rounds
                           force_row_wise= TRUE    #para que los alumnos no se atemoricen con tantos warning
                         )
@@ -472,11 +479,11 @@ if(!file.exists(kbayesiana)) {
 system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)
 
 #suicidio,  elimina la maquina virtual directamente
-#system( "sleep 10  && 
-#        export NAME=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/name -H 'Metadata-Flavor: Google') &&
-#        export ZONE=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/zone -H 'Metadata-Flavor: Google') &&
-#        gcloud --quiet compute instances delete $NAME --zone=$ZONE",
-#        wait=FALSE )
+system( "sleep 10  &&
+       export NAME=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/name -H 'Metadata-Flavor: Google') &&
+       export ZONE=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/zone -H 'Metadata-Flavor: Google') &&
+       gcloud --quiet compute instances delete $NAME --zone=$ZONE",
+       wait=FALSE )
 
 
 quit( save="no" )
