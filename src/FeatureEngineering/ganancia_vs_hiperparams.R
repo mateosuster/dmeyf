@@ -53,6 +53,8 @@ for (i in params){
 data <- read_delim("C:/Archivos/maestria/dmeyf/work/work_E5006_E5006_962_epic_BOlog.txt", delim = "\t") 
 
 data <- read_delim("C:/Archivos/maestria/dmeyf/work/work_E5016_E5016_962_epic_BOlog.txt", delim = "\t") 
+data <- read_delim("C:/Archivos/maestria/dmeyf/work/work_E5018_E5018_962_epic_maxbin_BOlog.txt", delim = "\t") 
+data <- read_delim("C:/Archivos/maestria/dmeyf/work/work_E5015_E5015_962_epic_BOlog.txt", delim = "\t") 
 
 
 params = c( "max_bin",  "learning_rate", "feature_fraction",
