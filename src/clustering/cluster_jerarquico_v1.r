@@ -66,7 +66,7 @@ dev.off()
 h <- 20
 distintos <- 0
 
-while(  h>0  &  !( distintos >=6 & distintos <=7 ) )
+while(  h>0  &  !( distintos >=5 & distintos <=6 ) )
 {
   h <- h - 1 
   rf.cluster  <- cutree( hclust.rf, h)
@@ -85,5 +85,8 @@ dataset[  , .N,  cluster2 ]  #tamaño de los clusters
 
 #ahora a mano veo las variables
 dataset[  , mean(ctrx_quarter),  cluster2 ]  #media de la variable  ctrx_quarter
+
+dataset[  , mean(ctrx_quarter),  by=list(cluster2, clase_ternaria) ]  #media de la variable  ctrx_quarter
+
 
 

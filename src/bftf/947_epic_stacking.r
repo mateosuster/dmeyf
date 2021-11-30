@@ -35,7 +35,7 @@ require("mlrMBO")
 switch ( Sys.info()[['sysname']],
          Windows = { directory.root  <-  "M:\\" },   #Windows
          Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
-         Linux   = { directory.root  <-  "~/buckets/b1/crudoB/" } #Google Cloud
+         Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
        )
 #defino la carpeta donde trabajo
 setwd( directory.root )
@@ -44,13 +44,13 @@ setwd( directory.root )
 
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
-kscript         <- "847_epic_stacking"
+kscript         <- "847_mi_primer_stacking"
 
-karch_dataset    <- "./datasets/dataset_stacking_v007.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
+karch_dataset    <- "./datasets/dataset_stacking_v001.csv.gz"   #este dataset se genero en el script 812_dataset_epic.r
 
-kapply_mes       <- c(202011)  #El mes donde debo aplicar el modelo
+kapply_mes       <- c(202101)  #El mes donde debo aplicar el modelo
 
-ktrain_subsampling  <- 1.0   #el undersampling que voy a hacer de los continua
+ktrain_subsampling  <- 0.1   #el undersampling que voy a hacer de los continua
 
 ktrain_mes_hasta    <- 202009  #Obviamente, solo puedo entrenar hasta 202011
 ktrain_mes_desde    <- 202009
