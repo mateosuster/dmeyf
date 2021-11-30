@@ -64,7 +64,6 @@ ktrain_desde   <- 202001
 ktrain_hasta   <- 202010
 ktrain_meses_malos  <- c(202003, 202004, 202005, 202006 )  #meses que quiero excluir del entrenamiento
 
-not_imp_cols = fread("./work/E5015_962_epic_imp_053.txt")[200:535, Feature]
 
 kBO_iter    <-  100   #cantidad de iteraciones de la Optimizacion Bayesiana
 
@@ -391,8 +390,9 @@ particionar( dataset,  c(1,9), agrupa=c("foto_mes","clase_ternaria"), campo="sub
 dataset <-  dataset[  (clase01==1  | subsampling==1) ]
 gc()
 
+not_imp_cols = fread("./work/E5015_962_epic_imp_053.txt")[200:535, Feature]
 campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", "fold", "train", "subsampling"  , not_imp_cols ) )
-
+rm(not_imp_cols)
 
 #undersampling para training
 dataset[  , train := 0L ]
