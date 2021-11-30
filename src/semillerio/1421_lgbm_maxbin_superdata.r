@@ -390,7 +390,7 @@ particionar( dataset,  c(1,9), agrupa=c("foto_mes","clase_ternaria"), campo="sub
 dataset <-  dataset[  (clase01==1  | subsampling==1) ]
 gc()
 
-not_imp_cols = fread("./work/E5015_962_epic_imp_053.txt")[200:535, Feature]
+not_imp_cols = fread("./work/E5015/E5015_962_epic_imp_053.txt")[200:535, Feature]
 campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", "fold", "train", "subsampling"  , not_imp_cols ) )
 rm(not_imp_cols)
 
