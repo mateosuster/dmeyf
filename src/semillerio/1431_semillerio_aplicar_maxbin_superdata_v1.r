@@ -20,7 +20,7 @@ kexperimento  <- NA
 kscript         <- "s1431_superdata_v1"
 
 
-kcantidad_semillas  <- 100
+kcantidad_semillas  <- 200
 
 #ATENCION
 #aqui deben ir los mejores valores que salieron de la optimizacion bayesiana
