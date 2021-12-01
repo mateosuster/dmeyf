@@ -28,6 +28,7 @@ dataset[  ,  azar := runif( nrow(dataset) ) ]
 dataset  <-  dataset[  clase_ternaria %in%c("BAJA+1", "BAJA+2")  & foto_mes>=202001  & foto_mes<=202011, ]
 gc()
 
+clientes_de_baja = unique(dataset[, numero_de_cliente])
 
 #quito los nulos para que se pueda ejecutar randomForest,  Dios que algoritmo prehistorico ...
 dataset  <- na.roughfix( dataset )
@@ -47,7 +48,9 @@ campos_buenos  <- c(
                      "mpagomiscuentas",
           # agregadas
           "mdescubierto_preacordado", "Visa_status", "Visa_Finiciomora", "Master_Finiciomora", "cprestamos_personales",
-          "ccaja_ahorro", "mcaja_ahorro", "transacciones_limite", "transacciones_limite", "Visa_delinquency"
+          "ccaja_ahorro", "mcaja_ahorro", 
+          # "transacciones_limite",
+          "Visa_delinquency"
 
                     )
 
@@ -101,3 +104,21 @@ avgs_z = avgs[  , lapply(.SD, scale),
                 .SDcols=campos_buenos ]  #media all zscore 
 
 
+# evolucion temporal de las variables
+library(tidyverse)
+data = readr::read_csv( "datasets/datasets_bajas.csv") %>% 
+  mutate(numero_de_cliente=as.factor(numero_de_cliente))
+
+for( i in campos_buenos){
+  print(data %>%
+          filter(clase_ternaria=="BAJA+2") %>% 
+    # select(foto_mes, numero_de_cliente, mpayroll, clase_ternaria) %>%
+    ggplot(aes(foto_mes, get(i)
+               ,color = numero_de_cliente
+               ))+
+    geom_line()+
+    # geom_line(aes(linetype=clase_ternaria))+
+    theme(legend.position = "none")+
+      labs(title = i)
+  )
+}
