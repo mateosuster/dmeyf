@@ -6,26 +6,15 @@ require("randomForest")
 rm( list=ls() )  #remove all objects
 gc()             #garbage collection
 
-# setwd( "~/buckets/b1/" )
-#para poder usarlo en la PC y en la nube sin tener que cambiar la ruta
-#cambiar aqui las rutas en su maquina
-switch ( Sys.info()[['sysname']],
-         Windows = { directory.root  <-  "C:/Archivos/maestria/dmeyf/" },   #Windows
-         Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
-         Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
-)
-#defino la carpeta donde trabajo
-setwd( directory.root )
+setwd( "~/buckets/b1/" )
 
 #leo el dataset , aqui se puede usar algun super dataset con Feature Engineering
-# dataset  <- fread( "datasetsOri/paquete_premium.csv.gz", stringsAsFactors= TRUE)
-dataset  <- fread( "datasets/datasets_bajas.csv", stringsAsFactors= TRUE)
+dataset  <- fread( "datasetsOri/paquete_premium.csv.gz", stringsAsFactors= TRUE)
 gc()
 
 #achico el dataset
 dataset[  ,  azar := runif( nrow(dataset) ) ]
-# dataset  <-  dataset[  clase_ternaria =="BAJA+1"  & foto_mes>=202001  & foto_mes<=202011, ]
-dataset  <-  dataset[  clase_ternaria %in%c("BAJA+1", "BAJA+2")  & foto_mes>=202001  & foto_mes<=202011, ]
+dataset  <-  dataset[  clase_ternaria =="BAJA+1"  & foto_mes>=202001  & foto_mes<=202011, ]
 gc()
 
 
@@ -34,9 +23,7 @@ dataset  <- na.roughfix( dataset )
 gc()
 
 
-campos_buenos  <- c( 
-          #default
-          "ctrx_quarter", "cpayroll_trx", "mcaja_ahorro", "mtarjeta_visa_consumo", "ctarjeta_visa_transacciones",
+campos_buenos  <- c( "ctrx_quarter", "cpayroll_trx", "mcaja_ahorro", "mtarjeta_visa_consumo", "ctarjeta_visa_transacciones",
                      "mcuentas_saldo", "mrentabilidad_annual", "mprestamos_personales", "mactivos_margen", "mpayroll",
                      "Visa_mpagominimo", "Master_fechaalta", "cliente_edad", "chomebanking_transacciones", "Visa_msaldopesos",
                      "Visa_Fvencimiento", "mrentabilidad", "Visa_msaldototal", "Master_Fvencimiento", "mcuenta_corriente",
@@ -44,12 +31,7 @@ campos_buenos  <- c(
                      "mtransferencias_recibidas", "cliente_antiguedad", "Visa_mconsumospesos", "Master_mfinanciacion_limite",
                      "mcaja_ahorro_dolares", "cproductos", "mcomisiones_otras", "thomebanking", "mcuenta_debitos_automaticos",
                      "mcomisiones", "Visa_cconsumos", "ccomisiones_otras", "Master_status", "mtransferencias_emitidas",
-                     "mpagomiscuentas",
-          # agregadas
-          "mdescubierto_preacordado", "Visa_status", "Visa_Finiciomora", "Master_Finiciomora", "cprestamos_personales",
-          "ccaja_ahorro", "mcaja_ahorro", "transacciones_limite", "transacciones_limite", "Visa_delinquency"
-
-                    )
+                     "mpagomiscuentas")
 
 
 
@@ -73,7 +55,7 @@ dev.off()
 h <- 20
 distintos <- 0
 
-while(  h>0  &  !( distintos >=5 & distintos <=6 ) )
+while(  h>0  &  !( distintos >=6 & distintos <=7 ) )
 {
   h <- h - 1 
   rf.cluster  <- cutree( hclust.rf, h)
@@ -92,12 +74,5 @@ dataset[  , .N,  cluster2 ]  #tamaño de los clusters
 
 #ahora a mano veo las variables
 dataset[  , mean(ctrx_quarter),  cluster2 ]  #media de la variable  ctrx_quarter
-
-dataset[  , mean(ctrx_quarter),  by=list(cluster2, clase_ternaria) ]  #media de la variable  ctrx_quarter
-
-avgs = dataset[  , lapply(.SD, mean, na.rm=T),  by=list(cluster2),.SDcols=campos_buenos ]  #media al vars
-
-avgs_z = avgs[  , lapply(.SD, scale),
-                .SDcols=campos_buenos ]  #media all zscore 
 
 

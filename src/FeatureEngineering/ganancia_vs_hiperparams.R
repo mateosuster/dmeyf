@@ -6,6 +6,8 @@ library(readr)
 
 data <- read_delim("C:/Archivos/maestria/dmeyf/work/E5017/work_E5017_E5017_1421_lgbm_maxbin_BOlog.txt", delim = "\t") 
 
+data <- read_delim("C:/Archivos/maestria/dmeyf/work/E2020/work_E5020_E5020_1421_lgbm_maxbin_rankeo_BOlog.txt", delim = "\t") 
+
 glimpse(data )
 
 params = c( "max_bin",  "learning_rate", "feature_fraction",
@@ -22,13 +24,13 @@ data %>%
   # ggplot(aes(ganancia, value , color = name)) +
   geom_point()+
   facet_wrap(~name, scales = "free", ncol=5)+
-  scale_x_continuous(labels = scales::unit_format(unit = "MM", scale = 1e-6))+
+  scale_x_continuous(labels = scales::unit_format(unit = "", scale = 1e-6))+
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = "none")+
   labs(title = "Hiperparámetros vs Ganancia en testing",
        subtitle = "Modelo semillerío de Light GBM", y= "",
        x = "Millones de pesos")
-ggsave("C:/Archivos/maestria/dmeyf/gcia_vs_hiper.png")
+ggsave("C:/Archivos/maestria/dmeyf/gcia_vs_hiper_E2020.png")
 
 for (i in params){
  print( data %>% 
