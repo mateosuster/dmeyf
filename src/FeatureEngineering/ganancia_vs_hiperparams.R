@@ -77,5 +77,6 @@ data %>%
        subtitle = "Modelo Light GBM con FE",
        x = "Millones de pesos")
 
+############### BO logs gcias 142x
 
-  
+
